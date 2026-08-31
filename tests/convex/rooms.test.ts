@@ -138,7 +138,7 @@ describe("MISSION_002 multiplayer boundaries", () => {
     expect(getPublicCardContextActions({ ...publicCard, definition: mockCardDefinitionsById[publicCard.cardDefinitionId] })).toEqual(["INSPECT"]);
     expect(getPublicCardContextActions({ ...publicCard, definition: mockCardDefinitionsById[publicCard.cardDefinitionId] }, true)).toEqual(["INSPECT", "TAP", "SEND_TO_GRAVEYARD", "RETURN_TO_HAND", "DEVASTATE", "MODIFY_CHARACTER_STATS"]);
     expect(getPublicCardContextActions({ ...state.cardInstances["B-hand-char"], definition: undefined })).toEqual([]);
-    expect(getDeckContextActions("MAIN_DECK", false)).toEqual(["DRAW_CARD", "LOOK_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"]);
+    expect(getDeckContextActions("MAIN_DECK", false)).toEqual(["DRAW_CARD", "LOOK_MAIN_DECK", "SEARCH_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"]);
     expect(getDeckContextActions("ESSENCE_DECK", false)).toEqual(["DRAW_ESSENCE"]);
     expect(getDeckContextActions("MAIN_DECK", true)).toEqual([]);
     expect(getDeckContextActions("ESSENCE_DECK", true)).toEqual([]);

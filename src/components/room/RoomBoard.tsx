@@ -137,8 +137,8 @@ export function RoomBoard({
     ),
   ) as Record<string, CardDefinition>;
 
-  const run = async (action: GameAction) => {
-    if (view.status !== "IN_GAME") return;
+  const run = async (action: GameAction): Promise<boolean> => {
+    if (view.status !== "IN_GAME") return false;
     setError("");
     try {
       await submit({
@@ -147,8 +147,10 @@ export function RoomBoard({
         clientActionId: crypto.randomUUID(),
         action,
       });
+      return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Accion rechazada");
+      return false;
     }
   };
   const inspect = (card: ViewCard) => {
@@ -208,6 +210,8 @@ export function RoomBoard({
       });
     if (action === "DRAW_CARD") void run({ type: "DRAW_CARD", playerId: me });
     if (action === "LOOK_MAIN_DECK") setDeckLookCount(1);
+    if (action === "SEARCH_MAIN_DECK")
+      void run({ type: "SEARCH_MAIN_DECK", playerId: me });
     if (action === "DRAW_ESSENCE")
       void run({ type: "DRAW_ESSENCE", playerId: me });
     if (action === "SEND_TOP_TO_GRAVEYARD")
@@ -500,13 +504,23 @@ export function RoomBoard({
             Cambio de ATQ/PV pendiente de aprobacion rival
           </div>
         )}
-        {view.game.deckLook && (
-          <DeckLookDialog
+        {view.game.deckLook?.mode === "SEARCH" && (
+          <DeckSearchDialog
             cards={view.game.deckLook.orderedInstanceIds.map((instanceId) => cards.find((card) => card.instanceId === instanceId)).filter((card): card is ViewCard => Boolean(card))}
-            onClose={() => void run({ type: "RESOLVE_DECK_LOOK", playerId: me, instanceIds: view.game!.deckLook!.orderedInstanceIds, destination: "TOP" })}
-            onReorder={(orderedInstanceIds) => void run({ type: "REORDER_DECK_LOOK", playerId: me, orderedInstanceIds })}
-            onResolve={(instanceIds, destination) => void run({ type: "RESOLVE_DECK_LOOK", playerId: me, instanceIds, destination })}
+            allCards={cards}
+            onClose={() => void run({ type: "CLOSE_DECK_SEARCH", playerId: me })}
+            onResolve={(instanceIds, destination) => run({ type: "RESOLVE_DECK_SEARCH", playerId: me, instanceIds, destination })}
+            onInspect={inspect}
           />
+        )}
+        {view.game.deckLook && view.game.deckLook.mode !== "SEARCH" && (
+            <DeckLookDialog
+              cards={view.game.deckLook.orderedInstanceIds.map((instanceId) => cards.find((card) => card.instanceId === instanceId)).filter((card): card is ViewCard => Boolean(card))}
+              allCards={cards}
+              onClose={() => void run({ type: "RESOLVE_DECK_LOOK", playerId: me, instanceIds: view.game!.deckLook!.orderedInstanceIds, destination: "TOP" })}
+              onReorder={(orderedInstanceIds) => void run({ type: "REORDER_DECK_LOOK", playerId: me, orderedInstanceIds })}
+              onResolve={(instanceIds, destination) => run({ type: "RESOLVE_DECK_LOOK", playerId: me, instanceIds, destination })}
+            />
         )}
         {deckLookCount !== null && (
           <DeckLookCountDialog
@@ -869,7 +883,7 @@ function VerseResolutionZone({
 function playable(
   card: ViewCard,
   playerId: string,
-  run: (action: GameAction) => Promise<void>,
+  run: (action: GameAction) => Promise<boolean>,
 ) {
   if (
     card.zone !== "HAND" ||
@@ -1227,7 +1241,7 @@ function UtilityChest({ playerId, disabled }: { playerId: string; disabled: bool
       window.removeEventListener("resize", updateTrayPosition);
       document.removeEventListener("scroll", updateTrayPosition, true);
     };
-  }, [open]);
+  }, [open, disabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -1239,11 +1253,11 @@ function UtilityChest({ playerId, disabled }: { playerId: string; disabled: bool
     };
     document.addEventListener("pointerdown", closeOnOutsidePointerDown);
     return () => document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
-  }, [open]);
+  }, [open, disabled]);
 
   return (
     <div ref={rootRef} data-testid={`utility-chest-${playerId}`} className="relative z-30 flex h-16 w-[88px] justify-end">
-      {open
+      {open && !disabled
         ? createPortal(
             <div
               ref={trayRef}
@@ -1257,12 +1271,21 @@ function UtilityChest({ playerId, disabled }: { playerId: string; disabled: bool
             </div>,
             document.body,
           )
-        : (
+        : disabled ? (
+          <div aria-hidden="true" className="flex h-16 w-16 items-center justify-center p-0 opacity-70">
+            <Image
+              src="/assets/utils-chest.png"
+              alt=""
+              width={64}
+              height={64}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        ) : (
         <button
           type="button"
           aria-label="Abrir Utils"
           aria-expanded={false}
-          disabled={disabled}
           className="group flex h-16 w-16 items-center justify-center p-0 transition disabled:cursor-default disabled:opacity-70"
           onClick={(event) => {
             event.stopPropagation();
@@ -2268,48 +2291,196 @@ function DeckLookCountDialog({
 
 function DeckLookDialog({
   cards,
+  allCards,
   onClose,
   onReorder,
   onResolve,
 }: {
   cards: ViewCard[];
+  allCards: ViewCard[];
   onClose: () => void;
   onReorder: (orderedInstanceIds: string[]) => void;
-  onResolve: (instanceIds: string[], destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE") => void;
+  onResolve: (instanceIds: string[], destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE") => Promise<boolean>;
 }) {
   const [ordered, setOrdered] = useState(cards);
   const [selected, setSelected] = useState<string[]>(cards.map((card) => card.instanceId));
+  const [destinations, setDestinations] = useState<Record<string, "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE">>({});
+  const [resolving, setResolving] = useState(false);
+  const allCardsById = new Map(allCards.map((card) => [card.instanceId, card]));
+  const selectableIds = ordered.filter((card) => !destinations[card.instanceId]).map((card) => card.instanceId);
+  const allSelected = selectableIds.length > 0 && selectableIds.every((instanceId) => selected.includes(instanceId));
   const move = (index: number, direction: -1 | 1) => {
     const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= ordered.length) return;
+    if (nextIndex < 0 || nextIndex >= ordered.length || destinations[ordered[index].instanceId] || destinations[ordered[nextIndex].instanceId] || resolving) return;
     const next = [...ordered];
     [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
     setOrdered(next);
-    onReorder(next.map((card) => card.instanceId));
+    onReorder(next.filter((card) => !destinations[card.instanceId]).map((card) => card.instanceId));
   };
-  const toggle = (instanceId: string) => setSelected((current) => current.includes(instanceId) ? current.filter((id) => id !== instanceId) : [...current, instanceId]);
-  const resolve = (destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE") => {
-    if (selected.length) onResolve(selected, destination);
+  const toggle = (instanceId: string) => {
+    if (destinations[instanceId] || resolving) return;
+    setSelected((current) => current.includes(instanceId) ? current.filter((id) => id !== instanceId) : [...current, instanceId]);
   };
+  const toggleAll = () => {
+    if (resolving || selectableIds.length === 0) return;
+    setSelected(allSelected ? [] : selectableIds);
+  };
+  const resolve = async (destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE") => {
+    const ids = selected.filter((instanceId) => !destinations[instanceId]);
+    if (!ids.length || resolving) return;
+    setResolving(true);
+    const succeeded = await onResolve(ids, destination);
+    if (succeeded) {
+      setDestinations((current) => Object.fromEntries([...Object.entries(current), ...ids.map((instanceId) => [instanceId, destination])]) as Record<string, "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE">);
+      setSelected((current) => current.filter((instanceId) => !ids.includes(instanceId)));
+    }
+    setResolving(false);
+  };
+  const destinationLabels: Record<"HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE", string> = { HAND: "MANO", GRAVEYARD: "CEMENTERIO", TOP: "TOP", BOTTOM: "FONDO", SHUFFLE: "BARAJAR" };
+  let returnOrder = 0;
   return (
     <div role="dialog" aria-modal="true" aria-label="Cartas miradas del mazo" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4">
       <section className="max-h-[90vh] w-full max-w-4xl overflow-auto border border-amber-200/25 bg-[#171311] p-5">
-        <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm uppercase tracking-[0.2em] text-amber-100">Mazo privado</h2><p className="mt-1 text-xs text-zinc-400">Reordena y selecciona las cartas que quieres mover.</p></div><button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={onClose}>Dejar arriba</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm uppercase tracking-[0.2em] text-amber-100">Mazo privado</h2><p className="mt-1 text-xs text-zinc-400">El orden mostrado define el retorno al mazo: 1 es la primera carta.</p></div><div className="flex gap-2"><button type="button" className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40" disabled={!selectableIds.length || resolving} onClick={toggleAll}>{allSelected ? "Deseleccionar todo" : "Seleccionar todo"}</button><button type="button" className="border border-white/20 px-3 py-2 text-xs disabled:opacity-40" disabled={resolving} onClick={onClose}>Dejar arriba</button></div></div>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          {ordered.map((card, index) => (
-            <article key={card.instanceId} className={`border p-1 ${selected.includes(card.instanceId) ? "border-emerald-300/60" : "border-white/10"}`}>
-              <label className="mb-1 flex items-center gap-2 text-[10px] uppercase text-zinc-300"><input type="checkbox" checked={selected.includes(card.instanceId)} onChange={() => toggle(card.instanceId)} /> Seleccionar</label>
-              <PublicCard card={card} size="field" onInspect={() => undefined} onContextMenu={() => undefined} />
+          {ordered.map((card, index) => {
+            const destination = destinations[card.instanceId];
+            const currentCard = allCardsById.get(card.instanceId) ?? card;
+            const order = destination === "HAND" || destination === "GRAVEYARD" ? null : ++returnOrder;
+            return (
+            <article data-testid={`deck-look-card-${card.instanceId}`} key={card.instanceId} className={`border p-1 ${destination ? "border-amber-300/60" : selected.includes(card.instanceId) ? "border-emerald-300/60" : "border-white/10"}`}>
+              <div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-zinc-300"><label className="flex items-center gap-2"><input type="checkbox" checked={selected.includes(card.instanceId)} disabled={Boolean(destination) || resolving} onChange={() => toggle(card.instanceId)} /> Seleccionar</label>{order !== null && <span data-testid={`deck-look-order-${card.instanceId}`} className="text-amber-100">Orden {order}</span>}</div>
+              {destination && <div data-testid={`deck-look-destination-${card.instanceId}`} className="mb-1 border border-amber-200/30 bg-amber-950/40 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wider text-amber-100">{destinationLabels[destination]}</div>}
+              <PublicCard card={currentCard} size="field" onInspect={() => undefined} onContextMenu={() => undefined} />
               <div className="mt-1 flex justify-center gap-1"><button type="button" aria-label="Mover antes" className="border border-white/15 px-2 text-xs" onClick={() => move(index, -1)}>←</button><button type="button" aria-label="Mover despues" className="border border-white/15 px-2 text-xs" onClick={() => move(index, 1)}>→</button></div>
-            </article>
-          ))}
+             </article>
+            );
+          })}
         </div>
         <div className="mt-5 flex flex-wrap justify-center gap-2 border-t border-white/10 pt-4">
-          <button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={() => resolve("TOP")}>Dejar arriba</button>
-          <button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={() => resolve("BOTTOM")}>Enviar al fondo</button>
-          <button type="button" className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100" onClick={() => resolve("HAND")}>Enviar a la mano</button>
-          <button type="button" className="border border-rose-300/40 px-3 py-2 text-xs text-rose-100" onClick={() => resolve("GRAVEYARD")}>Enviar al cementerio</button>
-          <button type="button" className="border border-amber-300/40 px-3 py-2 text-xs text-amber-100" onClick={() => resolve("SHUFFLE")}>Barajar en el mazo</button>
+          <button type="button" disabled={!selected.length || resolving} className="border border-white/20 px-3 py-2 text-xs disabled:opacity-30" onClick={() => void resolve("TOP")}>Dejar arriba</button>
+          <button type="button" disabled={!selected.length || resolving} className="border border-white/20 px-3 py-2 text-xs disabled:opacity-30" onClick={() => void resolve("BOTTOM")}>Enviar al fondo</button>
+          <button type="button" disabled={!selected.length || resolving} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-30" onClick={() => void resolve("HAND")}>Enviar a la mano</button>
+          <button type="button" disabled={!selected.length || resolving} className="border border-rose-300/40 px-3 py-2 text-xs text-rose-100 disabled:opacity-30" onClick={() => void resolve("GRAVEYARD")}>Enviar al cementerio</button>
+          <button type="button" disabled={!selected.length || resolving} className="border border-amber-300/40 px-3 py-2 text-xs text-amber-100 disabled:opacity-30" onClick={() => void resolve("SHUFFLE")}>Barajar en el mazo</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function DeckSearchDialog({
+  cards,
+  allCards,
+  onClose,
+  onResolve,
+  onInspect,
+}: {
+  cards: ViewCard[];
+  allCards: ViewCard[];
+  onClose: () => void;
+  onResolve: (instanceIds: string[], destination: "HAND" | "GRAVEYARD" | "FIELD") => Promise<boolean>;
+  onInspect: (card: ViewCard) => void;
+}) {
+  type SearchDestination = "HAND" | "GRAVEYARD" | "FIELD";
+  const [ordered] = useState(cards);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [destinations, setDestinations] = useState<Record<string, SearchDestination>>({});
+  const [resolving, setResolving] = useState(false);
+  const allCardsById = new Map(allCards.map((card) => [card.instanceId, card]));
+  const selectableIds = ordered
+    .filter((card) => !destinations[card.instanceId])
+    .map((card) => card.instanceId);
+  const allSelected = selectableIds.length > 0 && selectableIds.every((instanceId) => selected.includes(instanceId));
+  const selectedIds = selected.filter((instanceId) => !destinations[instanceId]);
+  const selectedCards = selectedIds
+    .map((instanceId) => allCardsById.get(instanceId) ?? ordered.find((card) => card.instanceId === instanceId))
+    .filter((card): card is ViewCard => Boolean(card));
+  const canSendToField = selectedCards.length > 0 && selectedCards.every((card) => card.definition?.type === "CHARACTER" || card.definition?.type === "RELIC");
+  const destinationLabels: Record<SearchDestination, string> = {
+    HAND: "MANO",
+    GRAVEYARD: "CEMENTERIO",
+    FIELD: "CAMPO",
+  };
+
+  const toggleAll = () => {
+    if (resolving || selectableIds.length === 0) return;
+    setSelected(allSelected ? [] : selectableIds);
+  };
+  const toggle = (instanceId: string) => {
+    if (resolving || destinations[instanceId]) return;
+    setSelected((current) => current.includes(instanceId)
+      ? current.filter((id) => id !== instanceId)
+      : [...current, instanceId]);
+  };
+  const resolve = async (destination: SearchDestination) => {
+    if (!selectedIds.length || resolving || (destination === "FIELD" && !canSendToField)) return;
+    setResolving(true);
+    const succeeded = await onResolve(selectedIds, destination);
+    if (succeeded) {
+      setDestinations((current) => ({
+        ...current,
+        ...Object.fromEntries(selectedIds.map((instanceId) => [instanceId, destination])),
+      }));
+      setSelected((current) => current.filter((instanceId) => !selectedIds.includes(instanceId)));
+    }
+    setResolving(false);
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Buscar cartas en el Mazo Principal"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget && !resolving) onClose();
+      }}
+    >
+      <section className="max-h-[90vh] w-full max-w-6xl overflow-auto border border-amber-200/25 bg-[#171311] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-amber-100">Buscar en Mazo Principal</h2>
+            <p className="mt-1 text-xs text-zinc-400">Seleccionadas: {selectedIds.length}. Elige un destino para las cartas marcadas.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40"
+              disabled={!selectableIds.length || resolving}
+              onClick={toggleAll}
+            >
+              {allSelected ? "Deseleccionar todo" : "Seleccionar todo"}
+            </button>
+            <button type="button" className="border border-white/20 px-3 py-2 text-xs disabled:opacity-40" disabled={resolving} onClick={onClose}>Cerrar</button>
+          </div>
+        </div>
+        <div className="mt-5 grid grid-cols-2 justify-items-center gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          {ordered.map((card) => {
+            const destination = destinations[card.instanceId];
+            const currentCard = allCardsById.get(card.instanceId) ?? card;
+            return (
+              <article
+                key={card.instanceId}
+                data-testid={`deck-search-card-${card.instanceId}`}
+                className={`w-fit border p-1 ${destination ? "border-amber-300/60" : selected.includes(card.instanceId) ? "border-emerald-300/70" : "border-white/10"}`}
+              >
+                <div className="mb-1 flex min-h-5 items-center justify-center text-[9px] uppercase text-zinc-300">
+                  <label className="flex cursor-pointer items-center gap-1">
+                    <input type="checkbox" checked={selected.includes(card.instanceId)} disabled={Boolean(destination) || resolving} onChange={() => toggle(card.instanceId)} />
+                    Elegir
+                  </label>
+                </div>
+                {destination && <div data-testid={`deck-search-destination-${card.instanceId}`} className="mb-1 border border-amber-200/30 bg-amber-950/40 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wider text-amber-100">{destinationLabels[destination]}</div>}
+                <PublicCard card={currentCard} size="sm" onInspect={() => onInspect(currentCard)} onContextMenu={(event) => event.preventDefault()} />
+              </article>
+            );
+          })}
+        </div>
+        <div className="mt-5 flex flex-wrap justify-center gap-2 border-t border-white/10 pt-4">
+          <button type="button" disabled={!selectedIds.length || resolving} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-30" onClick={() => void resolve("HAND")}>Enviar a la mano</button>
+          <button type="button" disabled={!selectedIds.length || resolving} className="border border-rose-300/40 px-3 py-2 text-xs text-rose-100 disabled:opacity-30" onClick={() => void resolve("GRAVEYARD")}>Enviar al cementerio</button>
+          <button type="button" disabled={!selectedIds.length || resolving || !canSendToField} className="border border-amber-300/40 px-3 py-2 text-xs text-amber-100 disabled:opacity-30" onClick={() => void resolve("FIELD")}>Enviar al campo</button>
         </div>
       </section>
     </div>
@@ -2366,6 +2537,7 @@ function ContextMenu({
     RETURN_ESSENCE_TO_DECK_BOTTOM: "Enviar al fondo del Mazo de Esencias",
     MODIFY_CHARACTER_STATS: "Modificar ATQ/PV",
     LOOK_MAIN_DECK: "Mirar",
+    SEARCH_MAIN_DECK: "Buscar en el Mazo",
     DEVASTATE: "Devastar",
     REVERT_DEVASTATION: "Revertir devastacion",
   };

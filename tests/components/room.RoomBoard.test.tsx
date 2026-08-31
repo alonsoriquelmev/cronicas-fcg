@@ -5,6 +5,7 @@ import { RoomBoard } from "@/components/room/RoomBoard";
 import { CARD_ASPECT_RATIO } from "@/components/board/card.tokens";
 import { buildMockGameState, mockCardDefinitionsById } from "@/data/mock-card-catalog";
 import { cardDefinitionsById } from "@/data/cards/catalog";
+import type { DeckLookState } from "@/domain/game/game.types";
 
 const finishMutation = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 vi.mock("convex/react", () => ({ useMutation: () => finishMutation }));
@@ -23,6 +24,7 @@ function boardView() {
     game: {
       ...state,
       cardInstances: Object.values(state.cardInstances).map((card) => ({ ...card, definition: mockCardDefinitionsById[card.cardDefinitionId] })),
+      deckLook: null as DeckLookState | null,
       hiddenCounts: {
         PLAYER_LOCAL: { HAND: 4, MAIN_DECK: 2, ESSENCE_DECK: 2 },
         PLAYER_OPPONENT: { HAND: 2, MAIN_DECK: 1, ESSENCE_DECK: 1 },
@@ -112,7 +114,7 @@ describe("RoomBoard terminal confirmations", () => {
     expect(screen.getByTestId("utility-tray-PLAYER_LOCAL").className).toContain("w-[176px]");
     expect(screen.getByTestId("utility-tray-PLAYER_LOCAL").className).toContain("fixed");
     expect(screen.getAllByTestId(/^utility-marker-PLAYER_LOCAL-/)).toHaveLength(4);
-    expect(within(screen.getByTestId("utility-chest-PLAYER_OPPONENT")).getByRole("button", { name: "Abrir Utils" }).hasAttribute("disabled")).toBe(true);
+    expect(within(screen.getByTestId("utility-chest-PLAYER_OPPONENT")).queryByRole("button", { name: "Abrir Utils" })).toBeNull();
 
     await user.click(document.body);
     expect(screen.queryByTestId("utility-tray-PLAYER_LOCAL")).toBeNull();
@@ -133,6 +135,45 @@ describe("RoomBoard terminal confirmations", () => {
     await user.click(screen.getByTestId("game-card-local-hand-char"));
 
     await waitFor(() => expect(screen.getByRole("dialog", { name: /Inspecci/ })).toBeTruthy());
+  });
+
+  it("shows deck return order, toggles all selections and labels resolved destinations", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    view.game.deckLook = { orderedInstanceIds: ["local-main-1", "local-main-2"] };
+    render(<RoomBoard view={view} sessionToken="session" />);
+
+    expect(screen.getByTestId("deck-look-order-local-main-1").textContent).toContain("Orden 1");
+    expect(screen.getByTestId("deck-look-order-local-main-2").textContent).toContain("Orden 2");
+    await user.click(screen.getByRole("button", { name: "Deseleccionar todo" }));
+    expect(screen.getByRole("button", { name: "Seleccionar todo" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Seleccionar todo" }));
+    await user.click(screen.getByRole("button", { name: "Enviar a la mano" }));
+
+    await waitFor(() => expect(screen.getAllByTestId(/^deck-look-destination-/)).toHaveLength(2));
+    expect(screen.getByTestId("deck-look-destination-local-main-1").textContent).toContain("MANO");
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: expect.objectContaining({ type: "RESOLVE_DECK_LOOK", destination: "HAND" }) }));
+  });
+
+  it("searches the full Main Deck, resolves multiple cards and closes from outside", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    view.game.deckLook = { orderedInstanceIds: ["local-main-1", "local-main-2"], mode: "SEARCH" };
+    render(<RoomBoard view={view} sessionToken="session" />);
+
+    expect(screen.getByRole("dialog", { name: "Buscar cartas en el Mazo Principal" })).toBeTruthy();
+    expect(screen.getAllByTestId(/^deck-search-card-/)).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "Seleccionar todo" }));
+    expect(screen.getByText(/Seleccionadas: 2\./)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Enviar a la mano" }));
+
+    await waitFor(() => expect(screen.getAllByTestId(/^deck-search-destination-/)).toHaveLength(2));
+    expect(screen.getByTestId("deck-search-destination-local-main-1").textContent).toContain("MANO");
+    expect(screen.getByTestId("deck-search-destination-local-main-2").textContent).toContain("MANO");
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: expect.objectContaining({ type: "RESOLVE_DECK_SEARCH", destination: "HAND", instanceIds: ["local-main-1", "local-main-2"] }) }));
+
+    await user.click(screen.getByRole("dialog", { name: "Buscar cartas en el Mazo Principal" }));
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "CLOSE_DECK_SEARCH", playerId: "PLAYER_LOCAL" } }));
   });
 
   it("opens the Inspector with a left click on a public opponent card", async () => {

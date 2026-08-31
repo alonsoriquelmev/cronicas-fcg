@@ -4,8 +4,11 @@ import type { CharacterMarkerKind } from "./character-markers";
 export type GameAction =
   | { type: "DRAW_CARD"; playerId: PlayerId }
   | { type: "LOOK_AT_MAIN_DECK"; playerId: PlayerId; count: number }
+  | { type: "SEARCH_MAIN_DECK"; playerId: PlayerId }
   | { type: "REORDER_DECK_LOOK"; playerId: PlayerId; orderedInstanceIds: string[] }
   | { type: "RESOLVE_DECK_LOOK"; playerId: PlayerId; instanceIds: string[]; destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE"; orderedInstanceIds?: string[] }
+  | { type: "RESOLVE_DECK_SEARCH"; playerId: PlayerId; instanceIds: string[]; destination: "HAND" | "GRAVEYARD" | "FIELD" }
+  | { type: "CLOSE_DECK_SEARCH"; playerId: PlayerId }
   | { type: "SHUFFLE_MAIN_DECK"; playerId: PlayerId; orderedInstanceIds?: string[] }
   | { type: "SEND_MAIN_DECK_TOP_TO_GRAVEYARD"; playerId: PlayerId }
   | { type: "MOVE_HAND_CARD_TO_GRAVEYARD"; instanceId: string; playerId: PlayerId }

@@ -25,7 +25,7 @@ function move(state: GameState, instanceId: string, zone: CardInstance["zone"], 
   const card = requireCard(state, instanceId);
   const nextController = controllerId ?? card.controllerId;
   const orderedByController = zone === "VERSE_RESOLUTION" ? undefined : nextController;
-  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null };
+  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), tapped: zone === "HAND" ? false : card.tapped, faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null };
   if (zone !== "FIELD" && state.pendingStatChanges?.[instanceId]) delete state.pendingStatChanges[instanceId];
   if (zone !== "FIELD" && state.characterMarkers?.[instanceId]) delete state.characterMarkers[instanceId];
   if (zone !== "FIELD" && card.zone === "FIELD") {
@@ -98,7 +98,16 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       looked.forEach((card, zoneOrder) => {
         next.cardInstances[card.instanceId] = { ...card, zone: "DECK_LOOK", zoneOrder, faceUp: true, attachedToInstanceId: null };
       });
-      next.deckLooks![action.playerId] = { orderedInstanceIds: looked.map((card) => card.instanceId) };
+      next.deckLooks![action.playerId] = { orderedInstanceIds: looked.map((card) => card.instanceId), mode: "LOOK" };
+      break;
+    }
+    case "SEARCH_MAIN_DECK": {
+      assertNoDeckLook(next, action.playerId);
+      const deck = cards(next, "MAIN_DECK", action.playerId);
+      deck.forEach((card) => {
+        next.cardInstances[card.instanceId] = { ...card, zone: "DECK_LOOK", faceUp: true, attachedToInstanceId: null };
+      });
+      next.deckLooks![action.playerId] = { orderedInstanceIds: deck.map((card) => card.instanceId), mode: "SEARCH" };
       break;
     }
     case "REORDER_DECK_LOOK": {
@@ -110,7 +119,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
         const card = requireCard(next, instanceId);
         next.cardInstances[instanceId] = { ...card, zoneOrder };
       });
-      next.deckLooks![action.playerId] = { orderedInstanceIds: [...action.orderedInstanceIds] };
+      next.deckLooks![action.playerId] = { orderedInstanceIds: [...action.orderedInstanceIds], mode: look.mode ?? "LOOK" };
       break;
     }
     case "RESOLVE_DECK_LOOK": {
@@ -132,6 +141,33 @@ export function applyGameAction(state: GameState, action: GameAction, definition
         selected.forEach((instanceId) => move(next, instanceId, destination, action.playerId));
       }
       removeDeckLook(next, action.playerId, selected);
+      break;
+    }
+    case "RESOLVE_DECK_SEARCH": {
+      const look = deckLook(next, action.playerId);
+      if (look.mode !== "SEARCH") throw new Error("No hay una busqueda activa del Mazo Principal");
+      const requested = new Set(action.instanceIds);
+      if (requested.size === 0 || action.instanceIds.length !== requested.size || action.instanceIds.some((instanceId) => !look.orderedInstanceIds.includes(instanceId))) throw new Error("La seleccion no pertenece a la busqueda");
+      if (action.destination === "FIELD") {
+        action.instanceIds.forEach((instanceId) => {
+          const definition = definitions?.[requireCard(next, instanceId).cardDefinitionId];
+          if (definition && definition.type !== "CHARACTER" && definition.type !== "RELIC") throw new Error("Solo Personajes y Reliquias pueden ir al Campo");
+        });
+      }
+      action.instanceIds.forEach((instanceId) => move(next, instanceId, action.destination, action.playerId, null));
+      next.deckLooks![action.playerId] = { orderedInstanceIds: look.orderedInstanceIds.filter((instanceId) => !requested.has(instanceId)), mode: "SEARCH" };
+      break;
+    }
+    case "CLOSE_DECK_SEARCH": {
+      const look = deckLook(next, action.playerId);
+      if (look.mode !== "SEARCH") throw new Error("No hay una busqueda activa del Mazo Principal");
+      const remaining = look.orderedInstanceIds
+        .map((instanceId) => requireCard(next, instanceId))
+        .sort((a, b) => a.zoneOrder - b.zoneOrder || a.instanceId.localeCompare(b.instanceId));
+      remaining.forEach((card, zoneOrder) => {
+        next.cardInstances[card.instanceId] = { ...card, zone: "MAIN_DECK", zoneOrder, faceUp: false, attachedToInstanceId: null };
+      });
+      delete next.deckLooks?.[action.playerId];
       break;
     }
     case "SHUFFLE_MAIN_DECK": assertNoDeckLook(next, action.playerId); applyDeckOrder(next, action.playerId, action.orderedInstanceIds); break;

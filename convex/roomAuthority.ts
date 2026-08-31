@@ -3,13 +3,13 @@ import type { CardDefinition } from "../src/domain/cards/card.types";
 import { definitions } from "./gameSeed";
 import { isCharacterMarkerKind } from "../src/domain/game/character-markers";
 
-const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
-const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
+const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
+const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
 
 type AuthorityState = {
   cardInstances: Record<string, { ownerId: string; controllerId: string; zone: string; cardDefinitionId: string; attachedToInstanceId: string | null; manualAttackModifier?: number; manualHealthModifier?: number }>;
   players: Record<string, { virtualEssenceCount?: number }>;
-  deckLooks?: Record<string, { orderedInstanceIds: string[] }>;
+  deckLooks?: Record<string, { orderedInstanceIds: string[]; mode?: "LOOK" | "SEARCH" }>;
   pendingStatChanges?: Record<string, { proposalId: string; characterInstanceId: string; proposerId: string; attackDelta: number; healthDelta: number }>;
   pendingVirtualEssenceChanges?: Record<string, { proposalId: string; playerId: string; amount: number }>;
   characterMarkers?: Record<string, { markerId: string; kind: string }[]>;
@@ -45,8 +45,8 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
     if (!card || (card.ownerId !== actorId && card.controllerId !== actorId)) throw new Error("Card is not controlled by this player");
   }
   const card = state.cardInstances[String(input.instanceId)];
-  const deckLookAction = input.type === "LOOK_AT_MAIN_DECK" || input.type === "REORDER_DECK_LOOK" || input.type === "RESOLVE_DECK_LOOK";
-  const deckActionsBlockedByLook = input.type === "DRAW_CARD" || input.type === "SHUFFLE_MAIN_DECK" || input.type === "SEND_MAIN_DECK_TOP_TO_GRAVEYARD" || input.type === "SHUFFLE_CARD_INTO_MAIN_DECK";
+  const deckLookAction = input.type === "LOOK_AT_MAIN_DECK" || input.type === "SEARCH_MAIN_DECK" || input.type === "REORDER_DECK_LOOK" || input.type === "RESOLVE_DECK_LOOK" || input.type === "RESOLVE_DECK_SEARCH" || input.type === "CLOSE_DECK_SEARCH";
+  const deckActionsBlockedByLook = input.type === "DRAW_CARD" || input.type === "SEARCH_MAIN_DECK" || input.type === "SHUFFLE_MAIN_DECK" || input.type === "SEND_MAIN_DECK_TOP_TO_GRAVEYARD" || input.type === "SHUFFLE_CARD_INTO_MAIN_DECK";
   if (deckActionsBlockedByLook && state.deckLooks?.[actorId]) throw new Error("Resolve the active deck look first");
   if (deckLookAction && input.playerId !== actorId) throw new Error("Deck look targets another seat");
   if (input.type === "LOOK_AT_MAIN_DECK") {
@@ -54,16 +54,29 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
     const deckCount = Object.values(state.cardInstances).filter((candidate) => candidate.controllerId === actorId && candidate.zone === "MAIN_DECK").length;
     if (state.deckLooks?.[actorId] || !Number.isInteger(count) || count < 1 || count > deckCount) throw new Error("Invalid deck look count");
   }
+  if (input.type === "SEARCH_MAIN_DECK") {
+    const deckCount = Object.values(state.cardInstances).filter((candidate) => candidate.controllerId === actorId && candidate.zone === "MAIN_DECK").length;
+    if (state.deckLooks?.[actorId] || deckCount < 1) throw new Error("Invalid main deck search");
+  }
   if (input.type === "REORDER_DECK_LOOK") {
     const look = state.deckLooks?.[actorId];
     const ordered = input.orderedInstanceIds;
-    if (!look || !Array.isArray(ordered) || ordered.length !== look.orderedInstanceIds.length || [...ordered].sort().some((id, index) => id !== [...look.orderedInstanceIds].sort()[index])) throw new Error("Deck look order is invalid");
+    if (!look || (look.mode ?? "LOOK") !== "LOOK" || !Array.isArray(ordered) || ordered.length !== look.orderedInstanceIds.length || [...ordered].sort().some((id, index) => id !== [...look.orderedInstanceIds].sort()[index])) throw new Error("Deck look order is invalid");
   }
   if (input.type === "RESOLVE_DECK_LOOK") {
     const look = state.deckLooks?.[actorId];
     const ids = input.instanceIds;
     const destinations = new Set(["HAND", "GRAVEYARD", "TOP", "BOTTOM", "SHUFFLE"]);
-    if (!look || !Array.isArray(ids) || ids.length === 0 || new Set(ids).size !== ids.length || ids.some((id) => !look.orderedInstanceIds.includes(id)) || !destinations.has(String(input.destination))) throw new Error("Deck look resolution is invalid");
+    if (!look || (look.mode ?? "LOOK") !== "LOOK" || !Array.isArray(ids) || ids.length === 0 || new Set(ids).size !== ids.length || ids.some((id) => !look.orderedInstanceIds.includes(id)) || !destinations.has(String(input.destination))) throw new Error("Deck look resolution is invalid");
+  }
+  if (input.type === "RESOLVE_DECK_SEARCH") {
+    const look = state.deckLooks?.[actorId];
+    const ids = input.instanceIds;
+    if (!look || look.mode !== "SEARCH" || !Array.isArray(ids) || ids.length === 0 || new Set(ids).size !== ids.length || ids.some((id) => !look.orderedInstanceIds.includes(id)) || !["HAND", "GRAVEYARD", "FIELD"].includes(String(input.destination))) throw new Error("Deck search resolution is invalid");
+    if (input.destination === "FIELD" && ids.some((id) => !["CHARACTER", "RELIC"].includes(definitions[state.cardInstances[String(id)]?.cardDefinitionId as keyof typeof definitions]?.type ?? ""))) throw new Error("Only Characters and Relics can move to Field");
+  }
+  if (input.type === "CLOSE_DECK_SEARCH" && (!state.deckLooks?.[actorId] || state.deckLooks[actorId].mode !== "SEARCH")) {
+    throw new Error("Deck search is not active");
   }
   if (input.controllerId !== undefined && input.controllerId !== actorId) throw new Error("Cannot change card controller");
   if (input.type === "MOVE_CARD" && (card?.zone === "ESSENCE_ZONE" || card?.zone === "SANCTUARY" || input.toZone === "ESSENCE_ZONE" || input.toZone === "ESSENCE_DECK")) throw new Error("This card movement is restricted");

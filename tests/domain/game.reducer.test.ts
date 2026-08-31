@@ -18,6 +18,12 @@ describe("applyGameAction", () => {
     expect(() => applyGameAction(buildMockGameState(), { type: "PLAY_RELIC", instanceId: "local-hand-relic", playerId: MOCK_IDS.local, attachedToInstanceId: null }, mockCardDefinitionsById)).toThrow();
   });
   it("draws the first ordered main deck card", () => { const next = applyGameAction(buildMockGameState(), { type: "DRAW_CARD", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-main-1"].zone).toBe("HAND"); expect(getCardsInZone(next, "MAIN_DECK", MOCK_IDS.local)).toHaveLength(1); });
+  it("untaps a card whenever it returns to hand", () => {
+    const state = buildMockGameState();
+    state.cardInstances["local-hand-char"] = { ...state.cardInstances["local-hand-char"], zone: "FIELD", tapped: true };
+    const next = applyGameAction(state, { type: "MOVE_CARD", instanceId: "local-hand-char", toZone: "HAND", controllerId: MOCK_IDS.local });
+    expect(next.cardInstances["local-hand-char"]).toMatchObject({ zone: "HAND", tapped: false });
+  });
   it("draws essence from the top and preserves deck order", () => { const next = applyGameAction(buildMockGameState(), { type: "DRAW_ESSENCE", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-essence-1"].zone).toBe("ESSENCE_ZONE"); expect(getCardsInZone(next, "ESSENCE_DECK", MOCK_IDS.local)[0].instanceId).toBe("local-essence-2"); });
   it("plays a character and attaches a relic", () => { let next = applyGameAction(buildMockGameState(), { type: "PLAY_CHARACTER", instanceId: "local-hand-char", playerId: MOCK_IDS.local }, mockCardDefinitionsById); next = applyGameAction(next, { type: "PLAY_RELIC", instanceId: "local-hand-relic", playerId: MOCK_IDS.local, attachedToInstanceId: "local-hand-char" }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-char"].zone).toBe("FIELD"); expect(next.cardInstances["local-hand-relic"].attachedToInstanceId).toBe("local-hand-char"); });
   it("moves verse through resolution to graveyard", () => { let next = applyGameAction(buildMockGameState(), { type: "PLAY_VERSE", instanceId: "local-hand-verse", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-verse"].zone).toBe("VERSE_RESOLUTION"); next = applyGameAction(next, { type: "RESOLVE_VERSE", instanceId: "local-hand-verse", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-verse"].zone).toBe("GRAVEYARD"); });
@@ -102,6 +108,23 @@ describe("applyGameAction", () => {
     state = applyGameAction(state, { type: "RESOLVE_DECK_LOOK", playerId: MOCK_IDS.local, instanceIds: ["local-main-1"], destination: "BOTTOM" });
     expect(state.cardInstances["local-main-1"].zone).toBe("MAIN_DECK");
     expect(state.deckLooks?.[MOCK_IDS.local]).toBeUndefined();
+  });
+
+  it("searches the whole Main Deck and returns unselected cards in their original order", () => {
+    let state = buildMockGameState();
+    state = applyGameAction(state, { type: "SEARCH_MAIN_DECK", playerId: MOCK_IDS.local }, mockCardDefinitionsById);
+    expect(state.deckLooks?.[MOCK_IDS.local]).toEqual({ orderedInstanceIds: ["local-main-1", "local-main-2"], mode: "SEARCH" });
+    expect(state.cardInstances["local-main-1"].zone).toBe("DECK_LOOK");
+    expect(state.cardInstances["local-main-2"].zone).toBe("DECK_LOOK");
+
+    state = applyGameAction(state, { type: "RESOLVE_DECK_SEARCH", playerId: MOCK_IDS.local, instanceIds: ["local-main-2"], destination: "HAND" }, mockCardDefinitionsById);
+    expect(state.cardInstances["local-main-2"].zone).toBe("HAND");
+    expect(state.deckLooks?.[MOCK_IDS.local]?.orderedInstanceIds).toEqual(["local-main-1"]);
+
+    state = applyGameAction(state, { type: "CLOSE_DECK_SEARCH", playerId: MOCK_IDS.local }, mockCardDefinitionsById);
+    expect(state.deckLooks?.[MOCK_IDS.local]).toBeUndefined();
+    expect(getCardsInZone(state, "MAIN_DECK", MOCK_IDS.local).map((card) => card.instanceId)).toEqual(["local-main-1"]);
+    expect(state.cardInstances["local-main-1"].faceUp).toBe(false);
   });
 
   it("requires an approved virtual Essence change and never permits a negative count", () => {

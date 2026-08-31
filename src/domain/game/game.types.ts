@@ -26,8 +26,11 @@ export type CardInstance = {
   devastatedFromAttachedToInstanceId?: CardInstanceId | null;
 };
 
+export type DeckLookMode = "LOOK" | "SEARCH";
+
 export type DeckLookState = {
   orderedInstanceIds: CardInstanceId[];
+  mode?: DeckLookMode;
 };
 
 export type CharacterStatChangeProposal = {

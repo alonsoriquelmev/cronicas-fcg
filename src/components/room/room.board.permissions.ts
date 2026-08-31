@@ -1,7 +1,7 @@
 import type { CardDefinition } from "@/domain/cards/card.types";
 import type { CardInstance } from "@/domain/game/game.types";
 
-export type RoomContextAction = "INSPECT" | "TAP" | "UNTAP" | "DETACH" | "SEND_TO_GRAVEYARD" | "RETURN_TO_HAND" | "MOVE_TO_FIELD" | "MOVE_TO_RESOLUTION" | "RESOLVE" | "DRAW_CARD" | "DRAW_ESSENCE" | "SEND_TOP_TO_GRAVEYARD" | "SHUFFLE_MAIN_DECK" | "SHUFFLE_INTO_MAIN_DECK" | "RETURN_ESSENCE_TO_DECK_BOTTOM" | "MODIFY_CHARACTER_STATS" | "LOOK_MAIN_DECK" | "DEVASTATE" | "REVERT_DEVASTATION";
+export type RoomContextAction = "INSPECT" | "TAP" | "UNTAP" | "DETACH" | "SEND_TO_GRAVEYARD" | "RETURN_TO_HAND" | "MOVE_TO_FIELD" | "MOVE_TO_RESOLUTION" | "RESOLVE" | "DRAW_CARD" | "DRAW_ESSENCE" | "SEND_TOP_TO_GRAVEYARD" | "SHUFFLE_MAIN_DECK" | "SEARCH_MAIN_DECK" | "SHUFFLE_INTO_MAIN_DECK" | "RETURN_ESSENCE_TO_DECK_BOTTOM" | "MODIFY_CHARACTER_STATS" | "LOOK_MAIN_DECK" | "DEVASTATE" | "REVERT_DEVASTATION";
 export type RoomViewCard = CardInstance & { definition?: CardDefinition | null; hidden?: boolean };
 export type CentralZone = "ESSENCE_ZONE" | "FIELD";
 
@@ -29,7 +29,7 @@ export function getPublicCardContextActions(card: RoomViewCard, editable = false
 
 export function getDeckContextActions(deck: "MAIN_DECK" | "ESSENCE_DECK", opponent: boolean): RoomContextAction[] {
   if (opponent) return [];
-  return deck === "MAIN_DECK" ? ["DRAW_CARD", "LOOK_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"] : ["DRAW_ESSENCE"];
+  return deck === "MAIN_DECK" ? ["DRAW_CARD", "LOOK_MAIN_DECK", "SEARCH_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"] : ["DRAW_ESSENCE"];
 }
 
 export function getHandCardContextActions(card: RoomViewCard): RoomContextAction[] {
