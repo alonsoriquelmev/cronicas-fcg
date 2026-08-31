@@ -1,7 +1,7 @@
-import type { CardDefinition } from "@/domain/cards/card.types";
-import type { CardInstance, GameState } from "@/domain/game/game.types";
-import testCards from "@/data/cards/generated/test-cards.json";
-import { parseCardCatalog } from "@/data/cards/schema";
+import type { CardDefinition } from "../domain/cards/card.types";
+import type { CardInstance, GameState } from "../domain/game/game.types";
+import testCards from "./cards/generated/test-cards.json";
+import { parseCardCatalog } from "./cards/schema";
 
 export const MOCK_IDS = {
   local: "PLAYER_LOCAL", opponent: "PLAYER_OPPONENT", charA: "mock-char-a", charB: "mock-char-b", relicA: "mock-relic-a", relicB: "mock-relic-b", verseA: "mock-verse-a", verseB: "mock-verse-b", essenceA: "mock-essence-a", essenceB: "mock-essence-b", sanctuary: "mock-sanctuary",
