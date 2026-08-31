@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "source": "Facciones",
+  "factionId": "COMMON",
+  "width": 815,
+  "height": 1110,
+  "assets": [
+    {
+      "sourceFile": "MDK-109.jpg",
+      "cardId": "MDK-109"
+    },
+    {
+      "sourceFile": "MDK-110.jpg",
+      "cardId": "MDK-110"
+    }
+  ]
+}

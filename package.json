@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "cards:validate": "node scripts/cards-validate.mjs",
+    "cards:build": "node scripts/cards-build.mjs",
+    "cards:assets": "node scripts/cards-assets.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

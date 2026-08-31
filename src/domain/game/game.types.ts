@@ -1,11 +1,12 @@
 import type { CardDefinition } from "../cards/card.types";
+import type { CharacterMarker } from "./character-markers";
 
 export type PlayerId = string;
 export type GameId = string;
 export type RoomId = string;
 export type CardInstanceId = string;
 export type CardDefinitionId = string;
-export type CardZone = "MAIN_DECK" | "ESSENCE_DECK" | "HAND" | "FIELD" | "ESSENCE_ZONE" | "SANCTUARY" | "GRAVEYARD" | "VERSE_RESOLUTION";
+export type CardZone = "MAIN_DECK" | "ESSENCE_DECK" | "HAND" | "FIELD" | "ESSENCE_ZONE" | "SANCTUARY" | "GRAVEYARD" | "VERSE_RESOLUTION" | "DECK_LOOK" | "DEVASTATED";
 export type GamePhase = "ALBA" | "AMANECER" | "MEDIODIA" | "ANOCHECER";
 
 export type CardInstance = {
@@ -19,9 +20,36 @@ export type CardInstance = {
   faceUp: boolean;
   attachedToInstanceId: CardInstanceId | null;
   counter: number;
+  manualAttackModifier?: number;
+  manualHealthModifier?: number;
+  devastatedFromZone?: "FIELD" | "GRAVEYARD";
+  devastatedFromAttachedToInstanceId?: CardInstanceId | null;
 };
 
-export type PlayerGameState = { playerId: PlayerId; displayName: string; sanctuaryHp: number };
+export type DeckLookState = {
+  orderedInstanceIds: CardInstanceId[];
+};
+
+export type CharacterStatChangeProposal = {
+  proposalId: string;
+  characterInstanceId: CardInstanceId;
+  proposerId: PlayerId;
+  attackDelta: number;
+  healthDelta: number;
+};
+
+export type VirtualEssenceChangeProposal = {
+  proposalId: string;
+  playerId: PlayerId;
+  amount: number;
+};
+
+export type PlayerGameState = {
+  playerId: PlayerId;
+  displayName: string;
+  sanctuaryHp: number;
+  virtualEssenceCount: number;
+};
 
 export type GameState = {
   gameId: GameId;
@@ -33,8 +61,20 @@ export type GameState = {
   phase: GamePhase;
   players: Record<PlayerId, PlayerGameState>;
   cardInstances: Record<CardInstanceId, CardInstance>;
+  deckLooks?: Record<PlayerId, DeckLookState>;
+  pendingStatChanges?: Record<CardInstanceId, CharacterStatChangeProposal>;
+  pendingVirtualEssenceChanges?: Record<PlayerId, VirtualEssenceChangeProposal>;
+  characterMarkers?: Record<CardInstanceId, CharacterMarker[]>;
 };
 
 export type CardView = CardInstance & { definition: CardDefinition };
 export type HiddenCardView = Pick<CardInstance, "instanceId" | "ownerId" | "controllerId" | "zone" | "zoneOrder" | "faceUp">;
-export type PlayerView = Omit<GameState, "cardInstances"> & { cardInstances: Record<CardInstanceId, CardView | HiddenCardView> };
+export type FaceDownPublicCardView = CardInstance & { cardDefinitionId: string; definition: null; hidden: true };
+export type HiddenZoneCounts = { HAND: number; MAIN_DECK: number; ESSENCE_DECK: number };
+export type PlayerViewCard = CardView | FaceDownPublicCardView;
+export type PlayerView = Omit<GameState, "cardInstances" | "deckLooks"> & {
+  cardInstances: PlayerViewCard[];
+  deckLook: DeckLookState | null;
+  hiddenCounts: Record<PlayerId, HiddenZoneCounts>;
+  publicCounts: Record<PlayerId, HiddenZoneCounts>;
+};

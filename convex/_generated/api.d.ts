@@ -8,7 +8,10 @@
  * @module
  */
 
+import type * as gameSeed from "../gameSeed.js";
 import type * as health from "../health.js";
+import type * as roomAuthority from "../roomAuthority.js";
+import type * as rooms from "../rooms.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +20,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  gameSeed: typeof gameSeed;
   health: typeof health;
+  roomAuthority: typeof roomAuthority;
+  rooms: typeof rooms;
 }>;
 
 /**

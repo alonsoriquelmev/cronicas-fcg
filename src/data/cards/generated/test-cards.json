@@ -1,0 +1,389 @@
+[
+  {
+    "id": "mock-char-c",
+    "name": "Custodio del Umbral",
+    "type": "CHARACTER",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 1,
+    "attack": 2,
+    "health": 3,
+    "rulesText": "Carta de prueba para el deck builder.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-char-c",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-char-d",
+    "name": "Testigo de Ceniza",
+    "type": "CHARACTER",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "rulesText": "Carta de prueba para el deck builder.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-char-d",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-relic-c",
+    "name": "Sello de Humo",
+    "type": "RELIC",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 2,
+    "attackModifier": 1,
+    "healthModifier": 0,
+    "rulesText": "Reliquia de prueba para el deck builder.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-relic-c",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-relic-d",
+    "name": "Brasa del Norte",
+    "type": "RELIC",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 3,
+    "attackModifier": 0,
+    "healthModifier": 1,
+    "rulesText": "Reliquia de prueba para el deck builder.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-relic-d",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-verse-c",
+    "name": "Eco del Valle",
+    "type": "VERSE",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 1,
+    "prologueText": "Verso de prueba.",
+    "epilogueText": "Resolucion manual.",
+    "rulesText": null,
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-verse-c",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-verse-d",
+    "name": "Umbral Abierto",
+    "type": "VERSE",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 3,
+    "prologueText": "Verso de prueba.",
+    "epilogueText": "Resolucion manual.",
+    "rulesText": null,
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-verse-d",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-char-a",
+    "name": "Vigia del Alba",
+    "type": "CHARACTER",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 2,
+    "attack": 3,
+    "health": 4,
+    "rulesText": "Carta de prueba para el campo.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-char-a",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-char-b",
+    "name": "Guardiana del Rio",
+    "type": "CHARACTER",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 3,
+    "attack": 2,
+    "health": 5,
+    "rulesText": "Ordena manualmente la formacion.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-char-b",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-relic-a",
+    "name": "Lanza de Bronce",
+    "type": "RELIC",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 2,
+    "attackModifier": 2,
+    "healthModifier": 0,
+    "rulesText": "Puede unirse a un personaje.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-relic-a",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-relic-b",
+    "name": "Manto del Eco",
+    "type": "RELIC",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 1,
+    "attackModifier": 0,
+    "healthModifier": 2,
+    "rulesText": "Reliquia independiente.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-relic-b",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-verse-a",
+    "name": "Canto Inicial",
+    "type": "VERSE",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 2,
+    "prologueText": "El primer verso entra en resolucion.",
+    "epilogueText": "Resuelto manualmente.",
+    "rulesText": null,
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-verse-a",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-verse-b",
+    "name": "Ultima Estrofa",
+    "type": "VERSE",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "cost": 4,
+    "prologueText": "Una escena espera su lectura.",
+    "epilogueText": "La mesa registra el cierre.",
+    "rulesText": null,
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-verse-b",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-essence-a",
+    "name": "Esencia Solar",
+    "type": "ESSENCE",
+    "factionId": "TEST",
+    "subtype": "SPECIAL",
+    "essenceKind": "SPECIAL",
+    "rulesText": "Recurso especial de prueba.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-essence-a",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-essence-b",
+    "name": "Esencia Umbral",
+    "type": "ESSENCE",
+    "factionId": "TEST",
+    "subtype": "BASIC",
+    "essenceKind": "BASIC",
+    "rulesText": "Recurso basico de prueba.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-essence-b",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "mock-sanctuary",
+    "name": "Santuario de Prueba",
+    "type": "SANCTUARY",
+    "factionId": "TEST",
+    "subtype": "Prototipo",
+    "health": 22,
+    "rulesText": "PV editable manualmente.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "MISSION_001",
+    "collectorNumber": "mock-sanctuary",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "errantes-sanctuary-testing",
+    "name": "Santuario de Errantes (Prueba)",
+    "type": "SANCTUARY",
+    "factionId": "ERRANTES",
+    "subtype": "Prototipo",
+    "health": 22,
+    "rulesText": "Santuario temporal para partidas de prueba hasta incorporar la carta oficial.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "TESTING",
+    "collectorNumber": "ERRANTES-SANCTUARY-TEST",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "caos-sanctuary-testing",
+    "name": "Santuario de Caos (Prueba)",
+    "type": "SANCTUARY",
+    "factionId": "CAOS",
+    "subtype": "Prototipo",
+    "health": 22,
+    "rulesText": "Santuario temporal para partidas de prueba hasta incorporar la carta oficial.",
+    "image": {
+      "board": null,
+      "detail": null
+    },
+    "setId": "TESTING",
+    "collectorNumber": "CAOS-SANCTUARY-TEST",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "fixture-character-001",
+    "name": "Structured Character Fixture",
+    "type": "CHARACTER",
+    "factionId": "FIXTURE",
+    "subtype": "Development",
+    "cost": 2,
+    "attack": 3,
+    "health": 4,
+    "rulesText": "Metadata estructurada de prueba; no es una carta oficial importada.",
+    "image": {
+      "board": "/cards/fixture/fixture-character-001.svg",
+      "detail": "/cards/fixture/fixture-character-001.svg"
+    },
+    "setId": "MISSION_005A",
+    "collectorNumber": "FIX-001",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "fixture-relic-001",
+    "name": "Structured Relic Fixture",
+    "type": "RELIC",
+    "factionId": "FIXTURE",
+    "subtype": "Development",
+    "cost": 1,
+    "attackModifier": 2,
+    "healthModifier": 0,
+    "rulesText": "Metadata estructurada de prueba; no es una carta oficial importada.",
+    "image": {
+      "board": "/cards/fixture/fixture-relic-001.svg",
+      "detail": "/cards/fixture/fixture-relic-001.svg"
+    },
+    "setId": "MISSION_005A",
+    "collectorNumber": "FIX-002",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "fixture-verse-001",
+    "name": "Structured Verse Fixture",
+    "type": "VERSE",
+    "factionId": "FIXTURE",
+    "subtype": "Development",
+    "cost": 2,
+    "prologueText": "Texto de fixture para probar metadata.",
+    "epilogueText": "Resolucion manual de fixture.",
+    "rulesText": null,
+    "image": {
+      "board": "/cards/fixture/fixture-verse-001.svg",
+      "detail": "/cards/fixture/fixture-verse-001.svg"
+    },
+    "setId": "MISSION_005A",
+    "collectorNumber": "FIX-003",
+    "rarity": "TEST",
+    "status": "TESTING"
+  },
+  {
+    "id": "fixture-essence-001",
+    "name": "Structured Essence Fixture",
+    "type": "ESSENCE",
+    "factionId": "FIXTURE",
+    "subtype": "BASIC",
+    "essenceKind": "BASIC",
+    "rulesText": "Metadata estructurada de prueba; no es una carta oficial importada.",
+    "image": {
+      "board": "/cards/fixture/fixture-essence-001.svg",
+      "detail": "/cards/fixture/fixture-essence-001.svg"
+    },
+    "setId": "MISSION_005A",
+    "collectorNumber": "FIX-004",
+    "rarity": "TEST",
+    "status": "TESTING"
+  }
+]

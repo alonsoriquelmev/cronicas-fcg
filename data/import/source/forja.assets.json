@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "source": "Forja-20260827T133458Z-1-001",
+  "factionId": "FORJA",
+  "width": 815,
+  "height": 1110,
+  "assets": [
+    {
+      "sourceFile": "MDK-037.jpg",
+      "cardId": "MDK-037"
+    },
+    {
+      "sourceFile": "MDK-038.jpg",
+      "cardId": "MDK-038"
+    },
+    {
+      "sourceFile": "MDK-039.jpg",
+      "cardId": "MDK-039"
+    },
+    {
+      "sourceFile": "MDK-040.jpg",
+      "cardId": "MDK-040"
+    },
+    {
+      "sourceFile": "MDK-041.jpg",
+      "cardId": "MDK-041"
+    },
+    {
+      "sourceFile": "MDK-042.jpg",
+      "cardId": "MDK-042"
+    },
+    {
+      "sourceFile": "MDK-043.jpg",
+      "cardId": "MDK-043"
+    },
+    {
+      "sourceFile": "MDK-044.jpg",
+      "cardId": "MDK-044"
+    },
+    {
+      "sourceFile": "MDK-045.jpg",
+      "cardId": "MDK-045"
+    },
+    {
+      "sourceFile": "MDK-046.jpg",
+      "cardId": "MDK-046"
+    },
+    {
+      "sourceFile": "MDK-047.jpg",
+      "cardId": "MDK-047"
+    },
+    {
+      "sourceFile": "MDK-048.jpg",
+      "cardId": "MDK-048"
+    },
+    {
+      "sourceFile": "MDK-049.jpg",
+      "cardId": "MDK-049"
+    },
+    {
+      "sourceFile": "MDK-050.jpg",
+      "cardId": "MDK-050"
+    },
+    {
+      "sourceFile": "MDK-051.jpg",
+      "cardId": "MDK-051"
+    },
+    {
+      "sourceFile": "MDK-052.jpg",
+      "cardId": "MDK-052"
+    },
+    {
+      "sourceFile": "MDK-053.jpg",
+      "cardId": "MDK-053"
+    },
+    {
+      "sourceFile": "MDK-054.jpg",
+      "cardId": "MDK-054"
+    }
+  ]
+}

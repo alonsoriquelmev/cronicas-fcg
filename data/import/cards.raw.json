@@ -1,0 +1,2053 @@
+{
+  "version": 1,
+  "source": "MDK official faction assets",
+  "cards": [
+    {
+      "id": "MDK-001",
+      "name": "Asteliana",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Canalizadora",
+      "image": {
+        "board": "/cards/orden/MDK-001.webp",
+        "detail": "/cards/orden/MDK-001.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "001/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Elige un Personaje en juego para que obtenga -1 de ataque o -1 de vida hasta el Anochecer. Interferencia — Mira la primera carta de tu Mazo. Déjala en el tope o colócala en el fondo."
+    },
+    {
+      "id": "MDK-002",
+      "name": "Zirkax",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Canalizador",
+      "image": {
+        "board": "/cards/orden/MDK-002.webp",
+        "detail": "/cards/orden/MDK-002.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "002/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Elige un Personaje en juego para que no pueda bloquear o entrar en Incursión durante este o su próximo turno. Talento — Roba una carta, luego descarta una carta."
+    },
+    {
+      "id": "MDK-003",
+      "name": "Jalim",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Centinela",
+      "image": {
+        "board": "/cards/orden/MDK-003.webp",
+        "detail": "/cards/orden/MDK-003.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "003/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 1,
+      "health": 3,
+      "rulesText": "Embate — Mira la primera carta de tu Mazo. Puedes dejarla en el tope o colocarla en el fondo. Temple — Este Personaje obtiene +1 de vida de forma permanente."
+    },
+    {
+      "id": "MDK-004",
+      "name": "Ave Azul",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Alma",
+      "image": {
+        "board": "/cards/orden/MDK-004.webp",
+        "detail": "/cards/orden/MDK-004.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "004/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Imbatible. La primera vez que este Personaje haga daño a un Santuario, roba 1 carta. Talento — Este Personaje vuelve a tu Mano."
+    },
+    {
+      "id": "MDK-005",
+      "name": "Kubrich el sabio",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Canalizador",
+      "image": {
+        "board": "/cards/orden/MDK-005.webp",
+        "detail": "/cards/orden/MDK-005.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "005/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 6,
+      "attack": 0,
+      "health": 6,
+      "rulesText": "Embate — El ataque de este Personaje es igual a la cantidad de cartas en tu Mano. Temple — Roba 2 cartas."
+    },
+    {
+      "id": "MDK-006",
+      "name": "La Etheriana",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Canalizadora",
+      "image": {
+        "board": "/cards/orden/MDK-006.webp",
+        "detail": "/cards/orden/MDK-006.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "006/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Si destruye un Personaje con este Rasgo, Mira la primera carta de tu Mazo. Puedes dejarla en el tope o colocarla en el fondo. Talento — Destruye un Personaje que controles. Si lo haces, destruye un Personaje en juego."
+    },
+    {
+      "id": "MDK-007",
+      "name": "Rey Etheriam",
+      "type": "CHARACTER",
+      "factionId": "ORDEN",
+      "subtype": "Canalizador Monarca",
+      "image": {
+        "board": "/cards/orden/MDK-007.webp",
+        "detail": "/cards/orden/MDK-007.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "007/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 1,
+      "health": 5,
+      "rulesText": "Embate — Si este Personaje hace daño a un Santuario con este Rasgo, puedes elegir un Verso de tu Cementerio y ponerlo en tu Mano. Interferencia — Un Personaje no hace daño a los Santuarios este turno."
+    },
+    {
+      "id": "MDK-008",
+      "name": "Valtherion",
+      "type": "RELIC",
+      "factionId": "ORDEN",
+      "subtype": "Mítica",
+      "image": {
+        "board": "/cards/orden/MDK-008.webp",
+        "detail": "/cards/orden/MDK-008.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "008/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attackModifier": 1,
+      "healthModifier": -1,
+      "rulesText": "Mítica. Cada vez que esta Reliquia sea equipada, puedes regresar un Personaje en juego a la Mano de su Dueño."
+    },
+    {
+      "id": "MDK-009",
+      "name": "Dagas de Luz",
+      "type": "RELIC",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-009.webp",
+        "detail": "/cards/orden/MDK-009.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "009/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attackModifier": 1,
+      "healthModifier": 1,
+      "rulesText": "Vincular 2. Cuando el Portador haga daño a un Santuario oponente, puedes robar 1 carta."
+    },
+    {
+      "id": "MDK-010",
+      "name": "Control de Etheria",
+      "type": "VERSE",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-010.webp",
+        "detail": "/cards/orden/MDK-010.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "010/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Destruye una Reliquia en juego.",
+      "epilogueText": "Destruye un Personaje en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-011",
+      "name": "Calma Ether",
+      "type": "VERSE",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-011.webp",
+        "detail": "/cards/orden/MDK-011.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "011/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Mira las tres primeras cartas de tu Mazo. Puedes dejarlas en el tope en el orden que desees o barajarlas. Luego roba una carta.",
+      "epilogueText": "Sube a la Mano de su Dueño un Personaje que haya hecho daño a un Santuario este turno.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-012",
+      "name": "Silencio de Arniel",
+      "type": "VERSE",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-012.webp",
+        "detail": "/cards/orden/MDK-012.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "012/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "La próxima carta que se fuera a resolver es Prohibida a menos que su Dueño consuma 2 Esencias adicionales.",
+      "epilogueText": "Gira un Personaje en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-013",
+      "name": "Estudio del Valle Ether",
+      "type": "VERSE",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-013.webp",
+        "detail": "/cards/orden/MDK-013.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "013/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Busca un Verso en tu Mazo y colócalo en tu Mano.",
+      "epilogueText": "Mira la primera carta de tu Mazo. Déjala en el tope o colócala en el fondo. Luego, roba 1 carta.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-014",
+      "name": "Flujo Ether",
+      "type": "VERSE",
+      "factionId": "ORDEN",
+      "subtype": null,
+      "image": {
+        "board": "/cards/orden/MDK-014.webp",
+        "detail": "/cards/orden/MDK-014.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "014/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Consume 1 Esencia de un jugador este turno.",
+      "epilogueText": "Una Esencia y sus copias pierden sus habilidades por este turno.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-015",
+      "name": "Etheria",
+      "type": "ESSENCE",
+      "factionId": "ORDEN",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/orden/MDK-015.webp",
+        "detail": "/cards/orden/MDK-015.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "015/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-016",
+      "name": "Etheria",
+      "type": "ESSENCE",
+      "factionId": "ORDEN",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/orden/MDK-016.webp",
+        "detail": "/cards/orden/MDK-016.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "016/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-017",
+      "name": "Rezonancia Ether",
+      "type": "ESSENCE",
+      "factionId": "ORDEN",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/orden/MDK-017.webp",
+        "detail": "/cards/orden/MDK-017.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "017/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "En tu Anochecer, si consumiste esta Esencia, puedes descartar 1 carta, más 1 carta por cada otra Rezonancia activada este turno. Si lo haces, roba 1 carta."
+    },
+    {
+      "id": "MDK-018",
+      "name": "Alivio Ether",
+      "type": "ESSENCE",
+      "factionId": "ORDEN",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/orden/MDK-018.webp",
+        "detail": "/cards/orden/MDK-018.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "018/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Esta Esencia entra girada. Puedes girarla y devolverla al Mazo de Esencia: en respuesta a un Embate, prohíbelo."
+    },
+    {
+      "id": "MDK-019",
+      "name": "Karleon",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Canalizador",
+      "image": {
+        "board": "/cards/instinto/MDK-019.webp",
+        "detail": "/cards/instinto/MDK-019.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "019/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 3,
+      "attack": 3,
+      "health": 3,
+      "rulesText": "Embate — Este Rasgo no tiene Etapa de entrenamiento. Interferencia — Haz 1 punto de daño a cualquier objetivo."
+    },
+    {
+      "id": "MDK-020",
+      "name": "Nas",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Arquera",
+      "image": {
+        "board": "/cards/instinto/MDK-020.webp",
+        "detail": "/cards/instinto/MDK-020.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "020/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 3,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Tus Arqueros y Arqueras en juego obtienen +1 de ataque permanente. Talento — Un Personaje en juego no puede bloquear Arqueros ni Arqueras este turno."
+    },
+    {
+      "id": "MDK-021",
+      "name": "Cas",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Arquero Monarca",
+      "image": {
+        "board": "/cards/instinto/MDK-021.webp",
+        "detail": "/cards/instinto/MDK-021.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "021/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Este Rasgo no tiene Etapa de entrenamiento. Talento — Descarta una carta. Si lo haces, haz 2 puntos de daño a un Santuario en juego."
+    },
+    {
+      "id": "MDK-022",
+      "name": "Caballero Leal",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Caballero",
+      "image": {
+        "board": "/cards/instinto/MDK-022.webp",
+        "detail": "/cards/instinto/MDK-022.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "022/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Roba una carta. Luego descarta una carta. Talento — Haz 1 punto de daño a un Personaje en juego."
+    },
+    {
+      "id": "MDK-023",
+      "name": "Agricultor",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Ciudadano",
+      "image": {
+        "board": "/cards/instinto/MDK-023.webp",
+        "detail": "/cards/instinto/MDK-023.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "023/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "attack": 0,
+      "health": 1,
+      "rulesText": "Talento — Un Personaje que controles obtiene -1 de ataque o -1 de vida de forma permanente. Si lo haces, haz 1 punto de daño a un Santuario. Interferencia — Un Personaje que controles gana +1 de vida o +1 de ataque."
+    },
+    {
+      "id": "MDK-024",
+      "name": "Albarian, El Eterno",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Canalizador",
+      "image": {
+        "board": "/cards/instinto/MDK-024.webp",
+        "detail": "/cards/instinto/MDK-024.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "024/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 6,
+      "attack": 1,
+      "health": 6,
+      "rulesText": "Embate — El ataque de este Personaje es el doble de la cantidad de Canalizadores que controles. Roba 1 carta. Interferencia — Busca un Canalizador en tu Mazo y juégalo pagando su coste reducido en 1 por cada Canalizador o Canalizadora que controles."
+    },
+    {
+      "id": "MDK-025",
+      "name": "Exterminador",
+      "type": "CHARACTER",
+      "factionId": "INSTINTO",
+      "subtype": "Arquero",
+      "image": {
+        "board": "/cards/instinto/MDK-025.webp",
+        "detail": "/cards/instinto/MDK-025.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "025/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Si hace daño a un Santuario, puedes mirar las 4 cartas superiores de tu Mazo y poner en tu Mano un Arquero o Arquera de entre ellas. Talento — Regresa un Personaje que controles a tu Mano. Si lo haces, haz 3 puntos de daño a un Santuario."
+    },
+    {
+      "id": "MDK-026",
+      "name": "Espada de Rois",
+      "type": "RELIC",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-026.webp",
+        "detail": "/cards/instinto/MDK-026.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "026/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attackModifier": 1,
+      "healthModifier": 0,
+      "rulesText": "En tu Anochecer, si el Portador hizo daño a un Santuario este turno, roba 1 carta."
+    },
+    {
+      "id": "MDK-027",
+      "name": "Arco Noble",
+      "type": "RELIC",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-027.webp",
+        "detail": "/cards/instinto/MDK-027.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "027/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attackModifier": 1,
+      "healthModifier": 0,
+      "rulesText": "Vincular 2. Si el Portador es un Arquero o Arquera, es Imbatible."
+    },
+    {
+      "id": "MDK-028",
+      "name": "Ascenso por la sangre",
+      "type": "VERSE",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-028.webp",
+        "detail": "/cards/instinto/MDK-028.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "028/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Destruye 3 Personajes que controles. Si lo haces, haz 6 puntos de daño a un Santuario.",
+      "epilogueText": "Destruye un Monarca que controles. Si lo haces, haz 6 puntos de daño a un Personaje en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-029",
+      "name": "Impulso",
+      "type": "VERSE",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-029.webp",
+        "detail": "/cards/instinto/MDK-029.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "029/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Elige un Personaje para que obtenga +1 de ataque de forma permanente.",
+      "epilogueText": "Un Rasgo de un Personaje que controles no requiere Etapa de entrenamiento.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-030",
+      "name": "Ofrenda",
+      "type": "VERSE",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-030.webp",
+        "detail": "/cards/instinto/MDK-030.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "030/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Haz 3 puntos de daño a un Personaje que controles. Si lo haces, haz 3 puntos de daño a un Santuario en juego.",
+      "epilogueText": "Haz 2 puntos de daño a un Santuario que controles. Si lo haces, haz 4 puntos de daño a un Personaje en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-031",
+      "name": "Flecha de Fuego",
+      "type": "VERSE",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-031.webp",
+        "detail": "/cards/instinto/MDK-031.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "031/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Haz 2 puntos de daño a un Santuario en juego.",
+      "epilogueText": "Haz 3 puntos de daño a un Personaje en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-032",
+      "name": "Aliento Ardiente",
+      "type": "VERSE",
+      "factionId": "INSTINTO",
+      "subtype": null,
+      "image": {
+        "board": "/cards/instinto/MDK-032.webp",
+        "detail": "/cards/instinto/MDK-032.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "032/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Haz 2 puntos de daño a un Santuario que controles. Si lo haces, haz 4 puntos de daño repartidos como desees entre Santuarios y/o Personajes.",
+      "epilogueText": "",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-033",
+      "name": "Escencia de Arniel",
+      "type": "ESSENCE",
+      "factionId": "INSTINTO",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/instinto/MDK-033.webp",
+        "detail": "/cards/instinto/MDK-033.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "033/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-034",
+      "name": "Etheria",
+      "type": "ESSENCE",
+      "factionId": "INSTINTO",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/instinto/MDK-034.webp",
+        "detail": "/cards/instinto/MDK-034.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "034/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-035",
+      "name": "Etheria Volcanica",
+      "type": "ESSENCE",
+      "factionId": "INSTINTO",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/instinto/MDK-035.webp",
+        "detail": "/cards/instinto/MDK-035.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "035/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Gírala y consume una Esencia. Si lo haces, haz 1 punto de daño a un Santuario. Solo puedes activar esta Esencia si no tienes cartas en tu Mano."
+    },
+    {
+      "id": "MDK-036",
+      "name": "Metamorfosis",
+      "type": "ESSENCE",
+      "factionId": "INSTINTO",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/instinto/MDK-036.webp",
+        "detail": "/cards/instinto/MDK-036.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "036/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Cuando esta Esencia entre en juego, gírala. Si lo haces, el próximo Personaje que entre bajo tu control obtiene +1 de ataque y +1 de vida de forma permanente."
+    },
+    {
+      "id": "MDK-037",
+      "name": "Doremax",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Minero",
+      "image": {
+        "board": "/cards/forja/MDK-037.webp",
+        "detail": "/cards/forja/MDK-037.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "037/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Este Personaje obtiene +1 de vida hasta tu Anochecer, solo si no se ha activado un Embate este turno. Si hace daño a un Santuario, genera una Esencia Virtual. Talento — Genera una Esencia Virtual."
+    },
+    {
+      "id": "MDK-038",
+      "name": "Vengador",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Minero",
+      "image": {
+        "board": "/cards/forja/MDK-038.webp",
+        "detail": "/cards/forja/MDK-038.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "038/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attack": 5,
+      "health": 5,
+      "rulesText": "Embate — Devastar. Si este Personaje hace daño a un Santuario, genera una Esencia Virtual. Talento — Genera 2 Esencias Virtuales."
+    },
+    {
+      "id": "MDK-039",
+      "name": "La Exiliada",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Arquera",
+      "image": {
+        "board": "/cards/forja/MDK-039.webp",
+        "detail": "/cards/forja/MDK-039.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "039/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 3,
+      "health": 3,
+      "rulesText": "Embate — Si generaste dos o más Esencias Virtuales este turno, roba una carta. Temple — Devuelve una Esencia que controles. Si lo haces, busca una carta de Personaje en tu Mazo y ponla en tu Mano."
+    },
+    {
+      "id": "MDK-040",
+      "name": "El Herrero",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Minero",
+      "image": {
+        "board": "/cards/forja/MDK-040.webp",
+        "detail": "/cards/forja/MDK-040.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "040/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 3,
+      "attack": 2,
+      "health": 3,
+      "rulesText": "Talento — Genera una esencia virtual o dos esencias virtuales para jugar reliquias. Talento — Devuelve una Esencia. Si lo haces, busca una Reliquia en tu Mazo, muéstrala y ponla en tu Mano."
+    },
+    {
+      "id": "MDK-041",
+      "name": "Kirok, el Adoptado",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Aventurero",
+      "image": {
+        "board": "/cards/forja/MDK-041.webp",
+        "detail": "/cards/forja/MDK-041.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "041/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 3,
+      "health": 2,
+      "rulesText": "Embate — Solo si es el primer Embate que activas en tu turno, puedes generar una Esencia Virtual. Talento — Si generaste alguna Esencia Virtual con al menos un Personaje este turno, muestra las 2 primeras cartas de tu Mazo. Agrega a tu mano 1 Reliquia o Personaje mostrado."
+    },
+    {
+      "id": "MDK-042",
+      "name": "Ray",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Guerrera",
+      "image": {
+        "board": "/cards/forja/MDK-042.webp",
+        "detail": "/cards/forja/MDK-042.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "042/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attack": 4,
+      "health": 5,
+      "rulesText": "Embate — Genera 1 Esencia o roba una carta. Interferencia — Consume 1 Esencia y sube un Personaje que controles a la Mano de su Dueño. Si lo haces, tus Personajes obtienen +1 de ataque por este turno."
+    },
+    {
+      "id": "MDK-043",
+      "name": "Rox, El Aventurero",
+      "type": "CHARACTER",
+      "factionId": "FORJA",
+      "subtype": "Aventurero",
+      "image": {
+        "board": "/cards/forja/MDK-043.webp",
+        "detail": "/cards/forja/MDK-043.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "043/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 1,
+      "health": 3,
+      "rulesText": "Embate — Reemplaza el poder de ataque de este Personaje por la cantidad de Esencias que controles. Resplandor — Agrega 1 Esencia. Esta Esencia entra girada."
+    },
+    {
+      "id": "MDK-044",
+      "name": "Vestigio Resonante",
+      "type": "RELIC",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-044.webp",
+        "detail": "/cards/forja/MDK-044.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "044/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 3,
+      "attackModifier": 0,
+      "healthModifier": 0,
+      "rulesText": "Vincular 1. El Portador obtiene +1 de ataque y +1 de vida por cada Reliquia en juego."
+    },
+    {
+      "id": "MDK-045",
+      "name": "Rompe Cráneos",
+      "type": "RELIC",
+      "factionId": "FORJA",
+      "subtype": "Mítica",
+      "image": {
+        "board": "/cards/forja/MDK-045.webp",
+        "detail": "/cards/forja/MDK-045.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "045/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attackModifier": null,
+      "healthModifier": 0,
+      "rulesText": "Mítica. El Portador obtiene +1 de ataque por cada Esencia consumida (no incluyendo las Virtuales) en tu turno hasta el Anochecer."
+    },
+    {
+      "id": "MDK-046",
+      "name": "Terremoto",
+      "type": "VERSE",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-046.webp",
+        "detail": "/cards/forja/MDK-046.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "046/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Destruye una Reliquia que controles. Si lo haces, destruye todos los Personajes con vida igual o menor al coste de esa Reliquia.",
+      "epilogueText": "Gira todos los Personajes en juego.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-047",
+      "name": "¡Mandar a volar!",
+      "type": "VERSE",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-047.webp",
+        "detail": "/cards/forja/MDK-047.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "047/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Un Personaje hace daño igual a su ataque a otro Personaje en juego.",
+      "epilogueText": "Destruye hasta dos Reliquias.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-048",
+      "name": "Intercambio",
+      "type": "VERSE",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-048.webp",
+        "detail": "/cards/forja/MDK-048.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "048/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Baraja una carta que controles en tu Mazo. Luego, pon en juego desde tu Mazo una carta del mismo tipo, distinto nombre y de igual coste.",
+      "epilogueText": "",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-049",
+      "name": "Forjar",
+      "type": "VERSE",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-049.webp",
+        "detail": "/cards/forja/MDK-049.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "049/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Busca una Reliquia en tu Mazo y ponla en tu Mano.",
+      "epilogueText": "Sube a la Mano una Reliquia que controles.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-050",
+      "name": "Embestida",
+      "type": "VERSE",
+      "factionId": "FORJA",
+      "subtype": null,
+      "image": {
+        "board": "/cards/forja/MDK-050.webp",
+        "detail": "/cards/forja/MDK-050.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "050/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "Un Personaje obtiene +3 de ataque y +3 de vida hasta tu Anochecer.",
+      "epilogueText": "Un Personaje obtiene Devastar hasta tu Anochecer.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-051",
+      "name": "Mineros",
+      "type": "ESSENCE",
+      "factionId": "FORJA",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/forja/MDK-051.webp",
+        "detail": "/cards/forja/MDK-051.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "051/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-052",
+      "name": "Arkanio",
+      "type": "ESSENCE",
+      "factionId": "FORJA",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/forja/MDK-052.webp",
+        "detail": "/cards/forja/MDK-052.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "052/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera 1 Esencia."
+    },
+    {
+      "id": "MDK-053",
+      "name": "Rayo",
+      "type": "ESSENCE",
+      "factionId": "FORJA",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/forja/MDK-053.webp",
+        "detail": "/cards/forja/MDK-053.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "053/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Gira esta Esencia y descarta una carta. Si lo haces, genera 2 Esencias Virtuales para pagar el coste de Reliquias."
+    },
+    {
+      "id": "MDK-054",
+      "name": "Arbol del Saber",
+      "type": "ESSENCE",
+      "factionId": "FORJA",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/forja/MDK-054.webp",
+        "detail": "/cards/forja/MDK-054.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "054/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Cuando esta Esencia entre en juego, puedes girarla. Si lo haces, roba 1 carta."
+    },
+    {
+      "id": "MDK-055",
+      "name": "Aratto",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Guerrero Monarca",
+      "cost": 5,
+      "attack": 4,
+      "health": 5,
+      "rulesText": "Embate — Imbatible. Este Rasgo no tiene Etapa de entrenamiento.\nTalento — Este Personaje obtiene +2 de ataque y +2 de vida en forma permanente.",
+      "image": {
+        "board": "/cards/caos/MDK-055.webp",
+        "detail": "/cards/caos/MDK-055.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "055/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-056",
+      "name": "El Desquiciado",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Guerrero",
+      "cost": 2,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Este Rasgo no tiene Etapa de entrenamiento.\nTalento — Haz 1 punto de daño a tu Santuario. Si lo haces, haz 1 punto de daño a un Santuario.",
+      "image": {
+        "board": "/cards/caos/MDK-056.webp",
+        "detail": "/cards/caos/MDK-056.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "056/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-057",
+      "name": "Brut",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Guerrero",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Imbatible. (La primera vez que este Personaje active su Embate, no puede ser bloqueado).\nTalento — Puedes destruir este Personaje. Si lo haces, roba 2 cartas.",
+      "image": {
+        "board": "/cards/caos/MDK-057.webp",
+        "detail": "/cards/caos/MDK-057.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "057/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-058",
+      "name": "Nat, La Guerrera",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Guerrera",
+      "cost": 2,
+      "attack": 3,
+      "health": 2,
+      "rulesText": "Embate — Devastar (El daño que exceda el necesario para destruir a los Personajes bloqueadores se asigna al Santuario).\nEmbate — No puede ser bloqueada por Personajes con ataque 1 o menos.",
+      "image": {
+        "board": "/cards/caos/MDK-058.webp",
+        "detail": "/cards/caos/MDK-058.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "058/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-059",
+      "name": "Nat, La Etheriana",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Canalizadora",
+      "cost": 4,
+      "attack": 3,
+      "health": 3,
+      "rulesText": "Interferencia — Un Personaje obtiene +2 de ataque y +2 de vida hasta tu Anochecer.\nInterferencia — Un Personaje obtiene Devastar hasta tu Anochecer.",
+      "image": {
+        "board": "/cards/caos/MDK-059.webp",
+        "detail": "/cards/caos/MDK-059.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "059/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-060",
+      "name": "Ermil",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Guerrero",
+      "cost": 4,
+      "attack": 4,
+      "health": 1,
+      "rulesText": "Embate — Devastar. Este Rasgo no tiene Etapa de entrenamiento.\nTalento — Elige un Personaje en juego para que obtenga Imbatible hasta tu Anochecer.",
+      "image": {
+        "board": "/cards/caos/MDK-060.webp",
+        "detail": "/cards/caos/MDK-060.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "060/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-061",
+      "name": "Bandido",
+      "type": "CHARACTER",
+      "factionId": "CAOS",
+      "subtype": "Traficante",
+      "cost": 3,
+      "attack": 4,
+      "health": 3,
+      "rulesText": "Embate — Si otro Personaje que controlas hizo daño este turno, este Personaje obtiene Devastar hasta tu Anochecer.\nTalento — Paga el coste de una Reliquia en juego para ganar el control de esa Reliquia. Luego, coloca este Personaje en el fondo de tu Mazo.",
+      "image": {
+        "board": "/cards/caos/MDK-061.webp",
+        "detail": "/cards/caos/MDK-061.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "061/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-062",
+      "name": "Zaram",
+      "type": "RELIC",
+      "factionId": "CAOS",
+      "subtype": "Implemento",
+      "cost": 5,
+      "attackModifier": 2,
+      "healthModifier": 2,
+      "rulesText": "Cuando el Portador active su Embate, los Personajes que controles obtienen +1 de ataque y Devastar hasta tu Anochecer.",
+      "image": {
+        "board": "/cards/caos/MDK-062.webp",
+        "detail": "/cards/caos/MDK-062.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "062/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-063",
+      "name": "Puño de Hierro",
+      "type": "RELIC",
+      "factionId": "CAOS",
+      "subtype": "Implemento",
+      "cost": 2,
+      "attackModifier": 2,
+      "healthModifier": 0,
+      "rulesText": "Vincular 2.",
+      "image": {
+        "board": "/cards/caos/MDK-063.webp",
+        "detail": "/cards/caos/MDK-063.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "063/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-064",
+      "name": "Corte",
+      "type": "VERSE",
+      "factionId": "CAOS",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Elige un Personaje en juego para que obtenga Devastar de forma permanente.",
+      "epilogueText": "Destruye un Personaje de coste 1 o menos.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-064.webp",
+        "detail": "/cards/caos/MDK-064.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "064/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-065",
+      "name": "Rafaga de Fuego",
+      "type": "VERSE",
+      "factionId": "CAOS",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Destruye un Personaje con 2 o menos de ataque.",
+      "epilogueText": "Destruye un Personaje con 3 o menos de vida.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-065.webp",
+        "detail": "/cards/caos/MDK-065.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "065/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-066",
+      "name": "Furia",
+      "type": "VERSE",
+      "factionId": "CAOS",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Un Personaje obtiene Imbatible.",
+      "epilogueText": "Un Personaje obtiene +3 de ataque y +3 de vida hasta tu Anochecer.",
+      "rulesText": "Vestigios.",
+      "keywords": [
+        "Vestigios"
+      ],
+      "image": {
+        "board": "/cards/caos/MDK-066.webp",
+        "detail": "/cards/caos/MDK-066.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "066/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-067",
+      "name": "Golpe Implacable",
+      "type": "VERSE",
+      "factionId": "CAOS",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Un Personaje obtiene -1 de ataque y recibe un punto de daño.",
+      "epilogueText": "Destruye un Personaje dañado.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-067.webp",
+        "detail": "/cards/caos/MDK-067.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "067/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-068",
+      "name": "¡Guerra!",
+      "type": "VERSE",
+      "factionId": "CAOS",
+      "subtype": null,
+      "cost": 5,
+      "prologueText": "Destruye un Personaje que controles para que haga daño igual a su ataque a todos los Personajes en juego.",
+      "epilogueText": "Destruye un Personaje que controles para que haga daño igual a su ataque a un Santuario en juego.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-068.webp",
+        "detail": "/cards/caos/MDK-068.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "068/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-069",
+      "name": "Oasis de Kerk",
+      "type": "ESSENCE",
+      "factionId": "CAOS",
+      "subtype": "BASIC",
+      "essenceKind": "BASIC",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-069.webp",
+        "detail": "/cards/caos/MDK-069.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "069/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-070",
+      "name": "Cristal de Etheria",
+      "type": "ESSENCE",
+      "factionId": "CAOS",
+      "subtype": "BASIC",
+      "essenceKind": "BASIC",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/caos/MDK-070.webp",
+        "detail": "/cards/caos/MDK-070.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "070/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-071",
+      "name": "Tormenta de Zorum",
+      "type": "ESSENCE",
+      "factionId": "CAOS",
+      "subtype": "SPECIAL",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Devuelve Tormenta de Zorum a la ultima posición de tu Mazo de Esencias y consume 1 Esencia. Si lo haces, un Personaje obtiene Devastar hasta tu Anochecer.",
+      "image": {
+        "board": "/cards/caos/MDK-071.webp",
+        "detail": "/cards/caos/MDK-071.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "071/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-072",
+      "name": "Cosecha de Cristal",
+      "type": "ESSENCE",
+      "factionId": "CAOS",
+      "subtype": "SPECIAL",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Límite: Activar Embate.\nSi consumiste esta Esencia en tu Anochecer, mira la primera carta de tu Mazo. Puedes enviarla a tu Cementerio o dejarla en el tope de tu Mazo.",
+      "image": {
+        "board": "/cards/caos/MDK-072.webp",
+        "detail": "/cards/caos/MDK-072.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "072/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-073",
+      "name": "Guardian de Arheim",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizador Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-073.webp",
+        "detail": "/cards/valor/MDK-073.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "073/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attack": 5,
+      "health": 5,
+      "rulesText": "Embate — El próximo Personaje que controles que active su Embate no puede ser bloqueado este turno. Talento — Activa el efecto de un Rasgo de un Personaje que controles sin girarlo."
+    },
+    {
+      "id": "MDK-074",
+      "name": "Vigia de los Malditos",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizador Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-074.webp",
+        "detail": "/cards/valor/MDK-074.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "074/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 12,
+      "attack": 10,
+      "health": 10,
+      "rulesText": "Embate — Luego de la Asignación de daño, esta carta vuelve a tu Mano. Resplandor — Este Personaje hace daño igual a su ataque a un Santuario en juego."
+    },
+    {
+      "id": "MDK-075",
+      "name": "Guardiana del Valle",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizadora Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-075.webp",
+        "detail": "/cards/valor/MDK-075.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "075/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 5,
+      "attack": 4,
+      "health": 5,
+      "rulesText": "Embate — Imbatible. Talento — Haz 3 puntos de daño a un Santuario o a un Personaje en juego."
+    },
+    {
+      "id": "MDK-076",
+      "name": "Guardiana de Zorum",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizadora Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-076.webp",
+        "detail": "/cards/valor/MDK-076.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "076/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 3,
+      "health": 4,
+      "rulesText": "Embate — Genera 1 Esencia Virtual para pagar el coste de Reliquias. Talento — Genera 1 Esencia Virtual para pagar el coste de Versos."
+    },
+    {
+      "id": "MDK-077",
+      "name": "Guardiana de Argath",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizadora Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-077.webp",
+        "detail": "/cards/valor/MDK-077.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "077/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Puedes agregar una Esencia adicional este turno, si lo haces en tu Anochecer, destruye este Personaje y roba 1 carta. Talento — Genera dos Esencias Virtuales."
+    },
+    {
+      "id": "MDK-078",
+      "name": "Albarian",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Canalizador",
+      "image": {
+        "board": "/cards/valor/MDK-078.webp",
+        "detail": "/cards/valor/MDK-078.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "078/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 3,
+      "attack": 3,
+      "health": 3,
+      "rulesText": "Embate — Si este Personaje hace daño, un Santuario que controles gana esa misma cantidad de vida. Talento — Descarta 2 cartas. Si lo haces, busca una carta en tu Mazo, muéstrala y ponla en tu Mano."
+    },
+    {
+      "id": "MDK-079",
+      "name": "Desolador de Zorum",
+      "type": "CHARACTER",
+      "factionId": "VALOR",
+      "subtype": "Bestia",
+      "image": {
+        "board": "/cards/valor/MDK-079.webp",
+        "detail": "/cards/valor/MDK-079.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "079/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Letal. Talento — Descarta una carta. Si lo haces, un Personaje obtiene Letal hasta el final del turno."
+    },
+    {
+      "id": "MDK-080",
+      "name": "Báculo Sagrado",
+      "type": "RELIC",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-080.webp",
+        "detail": "/cards/valor/MDK-080.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "080/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attackModifier": 0,
+      "healthModifier": 0,
+      "rulesText": "Vincular 1. Si el Portador es un Canalizador o Canalizadora obtiene +1 de ataque y +1 de vida. Cada vez que equipes esta Reliquia, roba una carta."
+    },
+    {
+      "id": "MDK-081",
+      "name": "Dagas Carmesí",
+      "type": "RELIC",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-081.webp",
+        "detail": "/cards/valor/MDK-081.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "081/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "attackModifier": 1,
+      "healthModifier": 1,
+      "rulesText": "Vincular 2. Si el Portador es bloqueado, destruye al Personaje que lo bloquea luego de la Asignación de daño."
+    },
+    {
+      "id": "MDK-082",
+      "name": "Origen",
+      "type": "VERSE",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-082.webp",
+        "detail": "/cards/valor/MDK-082.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "082/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 4,
+      "prologueText": "La próxima carta que se fuera a resolver es Prohibida.",
+      "epilogueText": "",
+      "rulesText": "Vestigios.",
+      "keywords": [
+        "Vestigios"
+      ]
+    },
+    {
+      "id": "MDK-083",
+      "name": "Último Pulso",
+      "type": "VERSE",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-083.webp",
+        "detail": "/cards/valor/MDK-083.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "083/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 6,
+      "prologueText": "",
+      "epilogueText": "Solo puedes jugar este Verso durante tu turno. Destruye todos los Personajes y Reliquias en juego.",
+      "rulesText": "Vestigios.",
+      "keywords": [
+        "Vestigios"
+      ]
+    },
+    {
+      "id": "MDK-084",
+      "name": "Presagio",
+      "type": "VERSE",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-084.webp",
+        "detail": "/cards/valor/MDK-084.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "084/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 2,
+      "prologueText": "El próximo Rasgo de Talento que fuera a resolverse es Prohibido.",
+      "epilogueText": "El próximo Rasgo de Interferencia que fuera a resolverse es Prohibido.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-085",
+      "name": "Arenas Movedizas",
+      "type": "VERSE",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-085.webp",
+        "detail": "/cards/valor/MDK-085.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "085/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "prologueText": "Sube un Personaje de coste 1 a la Mano de tu Controlador.",
+      "epilogueText": "Gira un Personaje.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-086",
+      "name": "Portador del Fracazo",
+      "type": "VERSE",
+      "factionId": "VALOR",
+      "subtype": null,
+      "image": {
+        "board": "/cards/valor/MDK-086.webp",
+        "detail": "/cards/valor/MDK-086.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "086/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "cost": 1,
+      "prologueText": "Destruye una Reliquia en juego.",
+      "epilogueText": "La siguiente Reliquia que fuera a resolverse es Prohibida a menos que su controlador consuma 3 Esencias.",
+      "rulesText": null
+    },
+    {
+      "id": "MDK-087",
+      "name": "Esencia de Gart",
+      "type": "ESSENCE",
+      "factionId": "VALOR",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/valor/MDK-087.webp",
+        "detail": "/cards/valor/MDK-087.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "087/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera una Esencia."
+    },
+    {
+      "id": "MDK-088",
+      "name": "Etheria",
+      "type": "ESSENCE",
+      "factionId": "VALOR",
+      "subtype": "BASIC",
+      "image": {
+        "board": "/cards/valor/MDK-088.webp",
+        "detail": "/cards/valor/MDK-088.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "088/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera una Esencia."
+    },
+    {
+      "id": "MDK-089",
+      "name": "Esencia Protectora",
+      "type": "ESSENCE",
+      "factionId": "VALOR",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/valor/MDK-089.webp",
+        "detail": "/cards/valor/MDK-089.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "089/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Cuando esta Esencia entre en juego, puedes elegir hasta 2 cartas de un Cementerio y barajarlas en el Mazo de su Dueño."
+    },
+    {
+      "id": "MDK-090",
+      "name": "Esencia del Golem",
+      "type": "ESSENCE",
+      "factionId": "VALOR",
+      "subtype": "SPECIAL",
+      "image": {
+        "board": "/cards/valor/MDK-090.webp",
+        "detail": "/cards/valor/MDK-090.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "090/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Desvanece 5 cartas de tu Cementerio, gira esta Esencia y devuelve esta Esencia al Mazo de Esencias. Si lo haces, roba una carta."
+    },
+    {
+      "id": "MDK-091",
+      "name": "Caballero Oscuro",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 2,
+      "attack": 2,
+      "health": 2,
+      "rulesText": "Embate — Este Rasgo no tiene Etapa de entrenamiento. Bota la carta superior de un Mazo. Talento — Consume 2 Esencias para regresar un Personaje de tu Cementerio a tu Mano.",
+      "image": {
+        "board": "/cards/errantes/MDK-091.webp",
+        "detail": "/cards/errantes/MDK-091.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "091/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-092",
+      "name": "Espectro Ambulante",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 1,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Este Rasgo no tiene Etapa de entrenamiento. Talento — Un jugador bota 1 carta (pone la carta superior de su Mazo en su Cementerio).",
+      "image": {
+        "board": "/cards/errantes/MDK-092.webp",
+        "detail": "/cards/errantes/MDK-092.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "092/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-093",
+      "name": "Karkamot",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Roba 2 carta. Luego, descarta 2 carta. Temple — Elige una carta en tu Cementerio con el mismo nombre que este Personaje y ponla en tu Mano.",
+      "image": {
+        "board": "/cards/errantes/MDK-093.webp",
+        "detail": "/cards/errantes/MDK-093.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "093/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-094",
+      "name": "Siervo Nocturno",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Cada jugador pone la carta superior de su Mazo en su Cementerio. Talento — Baraja los Espectros de tu Cementerio en tu Mazo. Luego, un jugador bota una cantidad de cartas igual a la cantidad de Espectros barajados de esta forma.",
+      "image": {
+        "board": "/cards/errantes/MDK-094.webp",
+        "detail": "/cards/errantes/MDK-094.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "094/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-095",
+      "name": "Merlo",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 4,
+      "attack": 4,
+      "health": 4,
+      "rulesText": "Embate — Descarta una carta. Roba una carta. Resplandor — Bota 4 cartas. Luego, puedes hacer que un Personaje obtenga -X de ataque y -X de vida, donde X es la cantidad de cartas de Espectros que hayan sido enviados a tu Cementerio este turno.",
+      "image": {
+        "board": "/cards/errantes/MDK-095.webp",
+        "detail": "/cards/errantes/MDK-095.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "095/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-096",
+      "name": "Heraldo Oscuro",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 8,
+      "attack": 6,
+      "health": 6,
+      "rulesText": "Embate — Imbatible. (La primera vez que este Personaje active su Embate, no puede ser bloqueado). Resplandor — Todos los Personajes en juego obtienen -4 de ataque y -4 de vida.",
+      "image": {
+        "board": "/cards/errantes/MDK-096.webp",
+        "detail": "/cards/errantes/MDK-096.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "096/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-097",
+      "name": "Corcel Maldito",
+      "type": "CHARACTER",
+      "factionId": "ERRANTES",
+      "subtype": "Espectro",
+      "cost": 1,
+      "attack": 1,
+      "health": 1,
+      "rulesText": "Embate — Cada jugador bota la carta superior de su Mazo. Talento — Descarta 2 cartas. Si lo haces, pon un Personaje de tu Cementerio en tu Mano.",
+      "image": {
+        "board": "/cards/errantes/MDK-097.webp",
+        "detail": "/cards/errantes/MDK-097.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "097/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-098",
+      "name": "Hoz del Miedo",
+      "type": "RELIC",
+      "factionId": "ERRANTES",
+      "subtype": "Implemento",
+      "cost": 2,
+      "attackModifier": 2,
+      "healthModifier": -1,
+      "rulesText": "Mítica. Si el Portador fuera a ser destruido, en vez de enviarlo al Cementerio, puedes ponerlo en tu Mano. El Portador no puede ser bloqueado por Personajes de coste 2 o menos.",
+      "image": {
+        "board": "/cards/errantes/MDK-098.webp",
+        "detail": "/cards/errantes/MDK-098.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "098/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-099",
+      "name": "Faro de los Condenados",
+      "type": "RELIC",
+      "factionId": "ERRANTES",
+      "subtype": "Implemento",
+      "cost": 2,
+      "attackModifier": 1,
+      "healthModifier": 0,
+      "rulesText": "Vincular 2 (Paga el coste de esta Reliquia +2: cambia su Portador). Cuando el Portador haga daño al Santuario oponente, puedes poner un Personaje de tu Cementerio en tu Mano.",
+      "image": {
+        "board": "/cards/errantes/MDK-099.webp",
+        "detail": "/cards/errantes/MDK-099.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "099/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-100",
+      "name": "Lamento Final",
+      "type": "VERSE",
+      "factionId": "ERRANTES",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Destruye un Personaje que controles. Si lo haces, destruye un Personaje en juego.",
+      "epilogueText": "Cada jugador destruye un Personaje que controle.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/errantes/MDK-100.webp",
+        "detail": "/cards/errantes/MDK-100.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "100/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-101",
+      "name": "Fulminar",
+      "type": "VERSE",
+      "factionId": "ERRANTES",
+      "subtype": null,
+      "cost": 5,
+      "prologueText": "Todos los Personajes en juego obtienen -2 de ataque y -2 de vida hasta el anochecer.",
+      "epilogueText": "Destruye un Personaje en juego.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/errantes/MDK-101.webp",
+        "detail": "/cards/errantes/MDK-101.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "101/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-102",
+      "name": "Aplastar",
+      "type": "VERSE",
+      "factionId": "ERRANTES",
+      "subtype": null,
+      "cost": 1,
+      "prologueText": "Destruye un Personaje de ataque 1.",
+      "epilogueText": "Destruye un Personaje de vida 1.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/errantes/MDK-102.webp",
+        "detail": "/cards/errantes/MDK-102.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "102/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-103",
+      "name": "Hacia la Eternidad",
+      "type": "VERSE",
+      "factionId": "ERRANTES",
+      "subtype": null,
+      "cost": 2,
+      "prologueText": "Cada jugador pone las tres cartas superiores de su Mazo en su Cementerio.",
+      "epilogueText": "Coloca en tu Mano un Personaje desde tu Cementerio.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/errantes/MDK-103.webp",
+        "detail": "/cards/errantes/MDK-103.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "103/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-104",
+      "name": "Trer a la vida",
+      "type": "VERSE",
+      "factionId": "ERRANTES",
+      "subtype": null,
+      "cost": 4,
+      "prologueText": "Pon en juego hasta 2 Personajes de coste 2 o menos desde tu Cementerio.",
+      "epilogueText": "Pon en juego un Personaje desde tu Cementerio. En tu Anochecer, Desvanece ese Personaje.",
+      "rulesText": null,
+      "image": {
+        "board": "/cards/errantes/MDK-104.webp",
+        "detail": "/cards/errantes/MDK-104.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "104/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-105",
+      "name": "Etheria",
+      "type": "ESSENCE",
+      "factionId": "ERRANTES",
+      "subtype": "BASIC",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera una Esencia.",
+      "image": {
+        "board": "/cards/errantes/MDK-105.webp",
+        "detail": "/cards/errantes/MDK-105.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "105/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-106",
+      "name": "Bosque Prohibido",
+      "type": "ESSENCE",
+      "factionId": "ERRANTES",
+      "subtype": "BASIC",
+      "essenceKind": "BASIC",
+      "rulesText": "Genera una Esencia.",
+      "image": {
+        "board": "/cards/errantes/MDK-106.webp",
+        "detail": "/cards/errantes/MDK-106.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "106/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-107",
+      "name": "Esencia Espectral",
+      "type": "ESSENCE",
+      "factionId": "ERRANTES",
+      "subtype": "SPECIAL",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Solo se puede activar un Golpe Espectral por turno. Gira esta Esencia para que un jugador ponga la carta superior de su Mazo en su Cementerio.",
+      "image": {
+        "board": "/cards/errantes/MDK-107.webp",
+        "detail": "/cards/errantes/MDK-107.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "107/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-108",
+      "name": "Tormenta",
+      "type": "ESSENCE",
+      "factionId": "ERRANTES",
+      "subtype": "SPECIAL",
+      "essenceKind": "SPECIAL",
+      "rulesText": "Cuando esta Esencia entre en juego, gírala. Si lo haces, busca una carta en tu Mazo y colócala en tu Cementerio.",
+      "image": {
+        "board": "/cards/errantes/MDK-108.webp",
+        "detail": "/cards/errantes/MDK-108.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "108/110",
+      "rarity": "C",
+      "status": "RELEASED"
+    },
+    {
+      "id": "MDK-109",
+      "name": "Templo del Poder",
+      "type": "SANCTUARY",
+      "factionId": null,
+      "subtype": null,
+      "image": {
+        "board": "/cards/common/MDK-109.webp",
+        "detail": "/cards/common/MDK-109.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "109/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "health": 22,
+      "rulesText": "Consume 1 Esencia. Si lo haces, un Personaje obtiene +1 de ataque y +1 de vida hasta el Anochecer. Cada vez que actives este efecto, su coste aumenta en 1 Esencia."
+    },
+    {
+      "id": "MDK-110",
+      "name": "Altar del Mercader",
+      "type": "SANCTUARY",
+      "factionId": null,
+      "subtype": null,
+      "image": {
+        "board": "/cards/common/MDK-110.webp",
+        "detail": "/cards/common/MDK-110.webp"
+      },
+      "setId": "MDK",
+      "collectorNumber": "110/110",
+      "rarity": "C",
+      "status": "RELEASED",
+      "health": 22,
+      "rulesText": "Consume 2 Esencias. Si lo haces, roba una carta. Cada vez que actives este efecto, su coste aumenta en 1 Esencia."
+    }
+  ]
+}

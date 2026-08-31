@@ -6,35 +6,56 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { buildMockGameState, MOCK_IDS, mockCardDefinitionsById } from "@/data/mock-card-catalog";
 import { applyGameAction } from "@/domain/game/game.reducer";
-import { getCardsInZone, sortHandForDisplay } from "@/domain/game/game.selectors";
+import { getCardsInZone, getTopCardInZone, sortHandForDisplay } from "@/domain/game/game.selectors";
 import type { GameAction } from "@/domain/game/game.actions";
 import type { CardInstance, CardZone } from "@/domain/game/game.types";
+import { DROP_TARGET_IDS, dropActionForTarget, parseDropTarget } from "@/domain/game/drop-targets";
 import { CardInspection } from "./CardInspection";
 import { GameCard } from "./GameCard";
-import { canDragCard, canEditCard, canMoveFromGraveyardTo, canTapCard, getContextActions, type BoardContextAction } from "./board.permissions";
+import { CardBack } from "./CardBack";
+import { canDragCard, canEditCard, canTapCard, getContextActions, type BoardContextAction } from "./board.permissions";
 
 const localId = MOCK_IDS.local;
 const opponentId = MOCK_IDS.opponent;
 
+function semanticDropTargetId(id: string) {
+  if (id === "own-field") return DROP_TARGET_IDS.FIELD;
+  if (id === "own-graveyard") return DROP_TARGET_IDS.GRAVEYARD;
+  if (id === "own-hand") return DROP_TARGET_IDS.HAND;
+  if (id === "verse-resolution") return DROP_TARGET_IDS.VERSE_RESOLUTION;
+  if (id.startsWith("character:")) return DROP_TARGET_IDS.characterSlot(id.slice("character:".length));
+  return id;
+}
+
 function DropZone({ id, children, className = "" }: { id: string; children?: React.ReactNode; className?: string }) {
-  const { isOver, setNodeRef } = useDroppable({ id });
+  const { isOver, setNodeRef } = useDroppable({ id: semanticDropTargetId(id) });
   return <div ref={setNodeRef} className={`${className} ${isOver ? "bg-emerald-300/10 shadow-[0_0_32px_rgba(110,231,183,0.18)]" : ""}`}>{children}</div>;
 }
 
-function DeckPile({ label, count, onDraw }: { label: string; count: number; onDraw?: () => void }) {
-  return <button type="button" disabled={!onDraw} onClick={onDraw} className={`group relative h-28 w-20 shrink-0 ${onDraw ? "cursor-pointer" : "cursor-default"}`} aria-label={`${label}, ${count} cartas`}><span className="absolute inset-1 translate-x-1 translate-y-1 border border-amber-200/20 bg-[#241b18]" /><span className="absolute inset-0 flex flex-col items-center justify-center border border-amber-200/45 bg-[#2a211d] text-center shadow-xl transition group-hover:-translate-y-1"><span className="text-[8px] uppercase tracking-[0.16em] text-amber-100/60">{label}</span><strong className="mt-1 text-xl">{count}</strong></span></button>;
+function DeckPile({ label, count, opponent = false, onDraw }: { label: string; count: number; opponent?: boolean; onDraw?: () => void }) {
+  const deck = label === "Essence" ? "ESSENCE_DECK" : "MAIN_DECK";
+  return <div className="flex min-w-0 flex-col items-center gap-1">
+    {opponent && <DeckMetadata label={label} count={count} />}
+    <CardBack label={label} count={count} deck={deck} enabled={Boolean(onDraw)} showCount={false} onClick={() => onDraw?.()} />
+    {!opponent && <DeckMetadata label={label} count={count} />}
+  </div>;
+}
+
+function DeckMetadata({ label, count }: { label: string; count: number }) {
+  return <div className="flex min-h-7 flex-col items-center justify-center text-center leading-none"><span className="text-[8px] uppercase tracking-[0.12em] text-zinc-500">{label}</span><strong className="mt-0.5 text-sm text-amber-100">{count}</strong></div>;
 }
 
 function ZoneCaption({ children, count }: { children: React.ReactNode; count?: number }) { return <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-zinc-500"><span>{children}</span>{count !== undefined && <span>{count}</span>}</div>; }
 
 function GraveyardPile({ cards, onOpen, onInspect }: { cards: CardInstance[]; onOpen: () => void; onInspect: (card: CardInstance) => void }) {
-  const top = cards[cards.length - 1];
+  const top = getTopCardInZone(cards);
   return <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") onOpen(); }} className="group min-h-28 w-24 shrink-0 cursor-pointer text-left" aria-label={`Abrir cementerio, ${cards.length} cartas`}><ZoneCaption count={cards.length}>Cementerio</ZoneCaption><div className="relative flex h-20 items-center justify-center border border-white/15 bg-white/[0.025] transition group-hover:border-amber-200/50">{top ? <span onClick={(event) => { event.stopPropagation(); onInspect(top); }}><GameCard card={top} definition={mockCardDefinitionsById[top.cardDefinitionId]} size="sm" /></span> : <span className="text-[9px] uppercase tracking-widest text-zinc-600">vacío</span>}</div></div>;
 }
 
 function DraggableCard({ card, definition, editable, draggable, onInspect, onDoubleClick, onContextMenu, onCounterChange, size = "md" }: { card: CardInstance; definition?: typeof mockCardDefinitionsById[string]; editable: boolean; draggable: boolean; onInspect: () => void; onDoubleClick?: () => void; onContextMenu: (event: React.MouseEvent) => void; onCounterChange: (amount: number) => void; size?: "sm" | "md" }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: card.instanceId, disabled: !draggable });
-  return <div ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.25 : 1 }} {...listeners} {...attributes}><GameCard card={card} definition={definition} editable={editable} size={size} onInspect={onInspect} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onCounterChange={onCounterChange} /></div>;
+  const rendered = <div ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.25 : 1 }} {...listeners} {...attributes}><GameCard card={card} definition={definition} editable={editable} size={size} onInspect={onInspect} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu} onCounterChange={onCounterChange} /></div>;
+  return rendered;
 }
 
 export function BoardSandbox() {
@@ -56,26 +77,9 @@ export function BoardSandbox() {
     if (!over) return;
     const card = state.cardInstances[String(active.id)];
     if (!card || !canDragCard(card, localId)) return;
-    const target = String(over.id);
-    const definition = definitionOf(card);
-    if (target === "own-field" && card.zone === "HAND") {
-      if (definition.type === "CHARACTER") dispatch({ type: "PLAY_CHARACTER", instanceId: card.instanceId, playerId: localId });
-      if (definition.type === "RELIC") dispatch({ type: "PLAY_RELIC", instanceId: card.instanceId, playerId: localId, attachedToInstanceId: null });
-    } else if (target === "verse-resolution" && card.zone === "HAND" && definition.type === "VERSE") dispatch({ type: "PLAY_VERSE", instanceId: card.instanceId, playerId: localId });
-    else if (target === "own-graveyard" && card.zone === "FIELD") dispatch({ type: "MOVE_CARD", instanceId: card.instanceId, toZone: "GRAVEYARD", controllerId: localId });
-    else if (target === "own-graveyard" && card.zone === "VERSE_RESOLUTION") dispatch({ type: "RESOLVE_VERSE", instanceId: card.instanceId, playerId: localId });
-    else if (target === "own-hand" && canMoveFromGraveyardTo(card, "HAND", localId)) dispatch({ type: "MOVE_CARD", instanceId: card.instanceId, toZone: "HAND", controllerId: localId });
-    else if (target === "own-field" && canMoveFromGraveyardTo(card, "FIELD", localId)) dispatch({ type: "MOVE_CARD", instanceId: card.instanceId, toZone: "FIELD", controllerId: localId, attachedToInstanceId: null });
-    else if (target.startsWith("character:") && definition.type === "RELIC") {
-      const characterId = target.slice(10);
-      if (card.zone === "HAND") dispatch({ type: "PLAY_RELIC", instanceId: card.instanceId, playerId: localId, attachedToInstanceId: characterId });
-      if (card.zone === "FIELD") dispatch({ type: "ATTACH_RELIC", relicInstanceId: card.instanceId, characterInstanceId: characterId });
-    } else if (target.startsWith("character:") && definition.type === "CHARACTER" && card.zone === "FIELD") {
-      const ordered = localCards("FIELD").filter((item) => definitionOf(item).type === "CHARACTER").map((item) => item.instanceId);
-      const targetIndex = ordered.indexOf(target.slice(10));
-      const currentIndex = ordered.indexOf(card.instanceId);
-      if (targetIndex >= 0 && currentIndex >= 0) { ordered.splice(currentIndex, 1); ordered.splice(targetIndex, 0, card.instanceId); dispatch({ type: "REORDER_FIELD", playerId: localId, orderedInstanceIds: ordered }); }
-    }
+    const target = parseDropTarget(String(over.id));
+    const action = target ? dropActionForTarget(card, target, localId, definitions, state.cardInstances) : null;
+    if (action) dispatch(action);
   };
   const cardRenderer = (card: CardInstance, size: "sm" | "md" = "md") => {
     const editable = canEditCard(card, localId);
@@ -84,13 +88,12 @@ export function BoardSandbox() {
   };
   const localField = localCards("FIELD");
   const graveyardCards = graveyardOwner ? cardsIn("GRAVEYARD", graveyardOwner) : [];
-  const contextActions = menu ? getContextActions(menu.card, localId) : [];
+  const contextActions = menu ? getContextActions(menu.card, localId, definitionOf(menu.card)) : [];
   const performContextAction = (action: BoardContextAction) => {
     const card = menu?.card;
     if (!card) return;
     if (action === "INSPECT") inspect(card);
     if (action === "TAP" || action === "UNTAP") dispatch({ type: action === "TAP" ? "TAP_CARD" : "UNTAP_CARD", instanceId: card.instanceId });
-    if (action === "FLIP") dispatch({ type: card.faceUp ? "FLIP_FACE_DOWN" : "FLIP_FACE_UP", instanceId: card.instanceId });
     if (action === "TO_GRAVEYARD") dispatch(card.zone === "VERSE_RESOLUTION" ? { type: "RESOLVE_VERSE", instanceId: card.instanceId, playerId: localId } : { type: "MOVE_CARD", instanceId: card.instanceId, toZone: "GRAVEYARD", controllerId: localId });
     if (action === "TO_HAND") dispatch({ type: "MOVE_CARD", instanceId: card.instanceId, toZone: "HAND", controllerId: localId });
     if (action === "TO_FIELD") dispatch({ type: "MOVE_CARD", instanceId: card.instanceId, toZone: "FIELD", controllerId: localId, attachedToInstanceId: null });
@@ -102,7 +105,7 @@ export function BoardSandbox() {
 
 function PlayerBoard({ label, hand, field, essences, sanctuary, graveyard, mainCount, essenceDeckCount, onInspect, onOpenGraveyard, renderCard, opponent = false, local = false, sanctuaryHp = 0, onDrawMain, onDrawEssence, onSanctuaryHp, onActivateSanctuary }: { label: string; hand: CardInstance[]; field: CardInstance[]; essences: CardInstance[]; sanctuary?: CardInstance; graveyard: CardInstance[]; mainCount: number; essenceDeckCount: number; onInspect: (card: CardInstance) => void; onOpenGraveyard: () => void; renderCard: (card: CardInstance, size?: "sm" | "md") => React.ReactNode; opponent?: boolean; local?: boolean; sanctuaryHp?: number; onDrawMain?: () => void; onDrawEssence?: () => void; onSanctuaryHp?: (amount: number) => void; onActivateSanctuary?: () => void }) {
   const characters = field.filter((card) => mockCardDefinitionsById[card.cardDefinitionId]?.type === "CHARACTER");
-  return <section className={`flex min-h-0 flex-col gap-1 ${opponent ? "[transform:rotateX(2deg)]" : "[transform:rotateX(-2deg)]"}`}><div className="flex items-center justify-between px-1 text-[9px] uppercase tracking-[0.24em] text-zinc-500"><span>{label}</span><span>{local ? "Tu perspectiva" : "Cartas públicas y mano oculta"}</span></div><div className="flex min-h-0 items-end gap-4"><div className="w-28 shrink-0"><GraveyardPile cards={graveyard} onOpen={onOpenGraveyard} onInspect={onInspect} /></div><div className="flex min-w-0 flex-1 flex-col gap-2"><div className="relative flex min-h-28 flex-wrap items-end justify-center gap-3 overflow-visible">{characters.map((character) => <div key={character.instanceId} className="relative min-h-32 min-w-40 p-1"><DropZone id={`character:${character.instanceId}`} className="flex min-h-32 flex-wrap items-end gap-2 overflow-visible p-1"><div className="[transform-origin:center_center]">{renderCard(character)}</div>{field.filter((card) => card.attachedToInstanceId === character.instanceId).map((relic) => <div key={relic.instanceId} className="self-end">{renderCard(relic, "sm")}</div>)}</DropZone></div>)}{field.filter((card) => mockCardDefinitionsById[card.cardDefinitionId]?.type === "RELIC" && !card.attachedToInstanceId).map((relic) => <div key={relic.instanceId}>{renderCard(relic)}</div>)}<DropZone id="own-field" className="absolute inset-0 -z-10" /></div><div className="flex min-h-10 items-center justify-center gap-3 border-y border-white/[0.06] py-1">{essences.map((card) => renderCard(card, "sm"))}</div></div><div className="flex w-44 shrink-0 items-end justify-end gap-3"><div className="flex flex-col items-center gap-1"><DeckPile label="Essence" count={essenceDeckCount} onDraw={local ? onDrawEssence : undefined} /><span className="text-[9px] uppercase tracking-widest text-zinc-600">Essence Deck</span></div><div className="flex flex-col items-center gap-1"><DeckPile label="Main" count={mainCount} onDraw={local ? onDrawMain : undefined} /><span className="text-[9px] uppercase tracking-widest text-zinc-600">Main Deck</span></div>{sanctuary && <div className="flex flex-col items-center gap-1"><div role="button" tabIndex={0} onClick={() => onInspect(sanctuary)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") onInspect(sanctuary); }} aria-label="Inspeccionar Santuario">{renderCard(sanctuary, "sm")}</div><span className="text-[9px] text-rose-200/80">PV {local ? sanctuaryHp : 22}</span>{local && <div className="flex gap-1"><button aria-label="Bajar vida del Santuario" className="w-5 border border-white/15" onClick={() => onSanctuaryHp?.(-1)}>−</button><button aria-label="Subir vida del Santuario" className="w-5 border border-white/15" onClick={() => onSanctuaryHp?.(1)}>+</button></div>}{local && <button type="button" className={`mt-1 border px-2 py-1 text-[9px] ${sanctuaryFeedbackClass}`} onClick={onActivateSanctuary}>Activar Santuario</button>}</div>}</div></div>{local && <DropZone id="own-hand" className="min-h-36 overflow-visible"><ZoneCaption count={hand.length}>Tu mano</ZoneCaption><div className="flex min-h-32 items-end justify-center overflow-visible px-8 pt-3">{hand.map((card, index) => <motion.div layout key={card.instanceId} className="-ml-5 first:ml-0" style={{ transform: `rotate(${(index - (hand.length - 1) / 2) * 3}deg) translateY(${Math.abs(index - (hand.length - 1) / 2) * 2}px)` }} whileHover={{ y: -14, zIndex: 10 }}>{renderCard(card)}</motion.div>)}</div></DropZone>}</section>;
+  return <section className={`flex min-h-0 flex-col gap-1 ${opponent ? "[transform:rotateX(2deg)]" : "[transform:rotateX(-2deg)]"}`}><div className="flex items-center justify-between px-1 text-[9px] uppercase tracking-[0.24em] text-zinc-500"><span>{label}</span><span>{local ? "Tu perspectiva" : "Cartas públicas y mano oculta"}</span></div><div className="flex min-h-0 items-end gap-4"><div className="w-28 shrink-0"><GraveyardPile cards={graveyard} onOpen={onOpenGraveyard} onInspect={onInspect} /></div><div className="flex min-w-0 flex-1 flex-col gap-2"><div className="relative flex min-h-28 flex-wrap items-end justify-center gap-3 overflow-visible">{characters.map((character) => <div key={character.instanceId} className="relative min-h-32 min-w-40 p-1"><DropZone id={`character:${character.instanceId}`} className="flex min-h-32 flex-wrap items-end gap-2 overflow-visible p-1"><div className="[transform-origin:center_center]">{renderCard(character)}</div>{field.filter((card) => card.attachedToInstanceId === character.instanceId).map((relic) => <div key={relic.instanceId} className="self-end">{renderCard(relic, "sm")}</div>)}</DropZone></div>)}{field.filter((card) => mockCardDefinitionsById[card.cardDefinitionId]?.type === "RELIC" && !card.attachedToInstanceId).map((relic) => <div key={relic.instanceId}>{renderCard(relic)}</div>)}<DropZone id="own-field" className="absolute inset-0 -z-10" /></div><div className="flex min-h-10 items-center justify-center gap-3 border-y border-white/[0.06] py-1">{essences.map((card) => renderCard(card, "sm"))}</div></div><div className="flex w-44 shrink-0 items-end justify-end gap-3"><div className="flex flex-col items-center gap-1"><DeckPile label="Essence" count={essenceDeckCount} opponent={opponent} onDraw={local ? onDrawEssence : undefined} /><span className="text-[9px] uppercase tracking-widest text-zinc-600">Essence Deck</span></div><div className="flex flex-col items-center gap-1"><DeckPile label="Main" count={mainCount} opponent={opponent} onDraw={local ? onDrawMain : undefined} /><span className="text-[9px] uppercase tracking-widest text-zinc-600">Main Deck</span></div>{sanctuary && <div className="flex flex-col items-center gap-1"><div role="button" tabIndex={0} onClick={() => onInspect(sanctuary)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") onInspect(sanctuary); }} aria-label="Inspeccionar Santuario">{renderCard(sanctuary, "sm")}</div><span className="text-[9px] text-rose-200/80">PV {local ? sanctuaryHp : 22}</span>{local && <div className="flex gap-1"><button aria-label="Bajar vida del Santuario" className="w-5 border border-white/15" onClick={() => onSanctuaryHp?.(-1)}>−</button><button aria-label="Subir vida del Santuario" className="w-5 border border-white/15" onClick={() => onSanctuaryHp?.(1)}>+</button></div>}{local && <button type="button" className={`mt-1 border px-2 py-1 text-[9px] ${sanctuaryFeedbackClass}`} onClick={onActivateSanctuary}>Activar Santuario</button>}</div>}</div></div>{local && <DropZone id="own-hand" className="min-h-36 overflow-visible"><ZoneCaption count={hand.length}>Tu mano</ZoneCaption><div className="flex min-h-32 items-end justify-center overflow-visible px-8 pt-3">{hand.map((card, index) => <motion.div layout key={card.instanceId} className="-ml-5 first:ml-0" style={{ transform: `rotate(${(index - (hand.length - 1) / 2) * 3}deg) translateY(${Math.abs(index - (hand.length - 1) / 2) * 2}px)` }} whileHover={{ y: -14, zIndex: 10 }}>{renderCard(card)}</motion.div>)}</div></DropZone>}</section>;
 }
 
 const sanctuaryFeedbackClass = "border-amber-200/30 text-amber-100";
@@ -113,10 +116,6 @@ function GraveyardGallery({ cards, ownerId, localId, onClose, onInspect, onMove 
 }
 
 function ContextMenu({ actions, x, y, onAction }: { actions: BoardContextAction[]; x: number; y: number; onAction: (action: BoardContextAction) => void }) {
-  const labels: Record<BoardContextAction, string> = { INSPECT: "Inspeccionar", TAP: "Girar", UNTAP: "Enderezar", FLIP: "Voltear", COUNTER: "Contador", TO_GRAVEYARD: "Enviar a Cementerio", TO_HAND: "Devolver a Mano", TO_FIELD: "Mover al Campo", DETACH: "Separar Reliquia" };
+  const labels: Record<BoardContextAction, string> = { INSPECT: "Inspeccionar", TAP: "Girar", UNTAP: "Enderezar", COUNTER: "Contador", TO_GRAVEYARD: "Enviar a Cementerio", TO_HAND: "Devolver a Mano", TO_FIELD: "Mover al Campo", DETACH: "Separar Reliquia" };
   return <div className="fixed z-50 w-48 border border-white/15 bg-[#191513] p-1 text-xs shadow-2xl" style={{ left: x, top: y }} onClick={(event) => event.stopPropagation()}>{actions.map((action) => <button key={action} type="button" className="block w-full px-3 py-2 text-left hover:bg-white/10" onClick={() => onAction(action)}>{labels[action]}</button>)}</div>;
 }
-
-
-
-

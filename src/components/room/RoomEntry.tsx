@@ -1,0 +1,16 @@
+"use client";
+
+import { useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { api } from "@/../convex/_generated/api";
+
+export const sessionKey = (code: string) => "cronicas:room:" + code.toUpperCase() + ":session";
+export function saveRoomSession(result: { code: string; playerSessionToken: string; seat: string; playerId: string }) { window.localStorage.setItem(sessionKey(result.code), JSON.stringify(result)); }
+
+export function RoomEntry({ initialCode = "", onSessionSaved }: { initialCode?: string; onSessionSaved?: (token: string) => void }) {
+  const router = useRouter(); const createRoom = useMutation(api.rooms.createRoom); const joinRoom = useMutation(api.rooms.joinRoom);
+  const [name, setName] = useState(""); const [code, setCode] = useState(initialCode); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
+  const run = async (operation: () => Promise<{ code: string; playerSessionToken: string; seat: string; playerId: string }>) => { setBusy(true); setError(""); try { const result = await operation(); saveRoomSession(result); onSessionSaved?.(result.playerSessionToken); router.push("/room/" + result.code); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo conectar a la sala"); } finally { setBusy(false); } };
+  return <section className="mx-auto flex min-h-[80vh] max-w-2xl items-center justify-center"><div className="w-full max-w-md border border-amber-200/20 bg-[#15120f] p-8 shadow-2xl"><p className="text-xs uppercase tracking-[0.28em] text-amber-300/70">Crónicas FCG / Multiplayer</p><h1 className="mt-2 text-3xl font-semibold">Abrir una mesa privada</h1><label className="mt-8 block text-xs uppercase tracking-widest text-zinc-500">Nombre temporal<input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none focus:border-emerald-300/60" placeholder="Tu nombre" maxLength={40} /></label><div className="mt-5 grid grid-cols-2 gap-3"><button disabled={busy || !name.trim()} onClick={() => void run(() => createRoom({ displayName: name }))} className="border border-emerald-300/50 bg-emerald-300/10 px-3 py-2 text-sm text-emerald-100 disabled:opacity-40">Crear sala</button><button disabled={busy || !name.trim() || !code.trim()} onClick={() => void run(() => joinRoom({ code, displayName: name }))} className="border border-amber-200/40 bg-amber-200/10 px-3 py-2 text-sm text-amber-100 disabled:opacity-40">Unirse</button></div><label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">Código de sala<input value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-amber-300/60" placeholder="ABC123" maxLength={6} /></label>{error && <p role="alert" className="mt-4 border border-rose-300/30 bg-rose-950/30 p-3 text-sm text-rose-100">{error}</p>}<p className="mt-6 text-xs leading-5 text-zinc-500">Comparte el código o el enlace de la sala. El acceso a un asiento depende de la sesión privada del navegador.</p></div></section>;
+}

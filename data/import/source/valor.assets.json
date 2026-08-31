@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "source": "Valor-20260830T162143Z-1-001",
+  "factionId": "VALOR",
+  "width": 815,
+  "height": 1110,
+  "assets": [
+    {
+      "sourceFile": "MDK-073.jpg",
+      "cardId": "MDK-073"
+    },
+    {
+      "sourceFile": "MDK-074.jpg",
+      "cardId": "MDK-074"
+    },
+    {
+      "sourceFile": "MDK-075.jpg",
+      "cardId": "MDK-075"
+    },
+    {
+      "sourceFile": "MDK-076.jpg",
+      "cardId": "MDK-076"
+    },
+    {
+      "sourceFile": "MDK-077.jpg",
+      "cardId": "MDK-077"
+    },
+    {
+      "sourceFile": "MDK-078.jpg",
+      "cardId": "MDK-078"
+    },
+    {
+      "sourceFile": "MDK-079.jpg",
+      "cardId": "MDK-079"
+    },
+    {
+      "sourceFile": "MDK-080.jpg",
+      "cardId": "MDK-080"
+    },
+    {
+      "sourceFile": "MDK-081.jpg",
+      "cardId": "MDK-081"
+    },
+    {
+      "sourceFile": "MDK-082.jpg",
+      "cardId": "MDK-082"
+    },
+    {
+      "sourceFile": "MDK-083.jpg",
+      "cardId": "MDK-083"
+    },
+    {
+      "sourceFile": "MDK-084.jpg",
+      "cardId": "MDK-084"
+    },
+    {
+      "sourceFile": "MDK-085.jpg",
+      "cardId": "MDK-085"
+    },
+    {
+      "sourceFile": "MDK-086.jpg",
+      "cardId": "MDK-086"
+    },
+    {
+      "sourceFile": "MDK-087.jpg",
+      "cardId": "MDK-087"
+    },
+    {
+      "sourceFile": "MDK-088.jpg",
+      "cardId": "MDK-088"
+    },
+    {
+      "sourceFile": "MDK-089.jpg",
+      "cardId": "MDK-089"
+    },
+    {
+      "sourceFile": "MDK-090.jpg",
+      "cardId": "MDK-090"
+    }
+  ]
+}

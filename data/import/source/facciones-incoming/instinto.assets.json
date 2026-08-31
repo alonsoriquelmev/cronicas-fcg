@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "source": "Instinto-20260831T030111Z-1-001",
+  "factionId": "INSTINTO",
+  "width": 815,
+  "height": 1110,
+  "assets": [
+    {
+      "sourceFile": "MDK-019.jpg",
+      "cardId": "MDK-019"
+    },
+    {
+      "sourceFile": "MDK-020.jpg",
+      "cardId": "MDK-020"
+    },
+    {
+      "sourceFile": "MDK-021.jpg",
+      "cardId": "MDK-021"
+    },
+    {
+      "sourceFile": "MDK-022.jpg",
+      "cardId": "MDK-022"
+    },
+    {
+      "sourceFile": "MDK-023.jpg",
+      "cardId": "MDK-023"
+    },
+    {
+      "sourceFile": "MDK-024.jpg",
+      "cardId": "MDK-024"
+    },
+    {
+      "sourceFile": "MDK-025.jpg",
+      "cardId": "MDK-025"
+    },
+    {
+      "sourceFile": "MDK-026.jpg",
+      "cardId": "MDK-026"
+    },
+    {
+      "sourceFile": "MDK-027.jpg",
+      "cardId": "MDK-027"
+    },
+    {
+      "sourceFile": "MDK-028.jpg",
+      "cardId": "MDK-028"
+    },
+    {
+      "sourceFile": "MDK-029.jpg",
+      "cardId": "MDK-029"
+    },
+    {
+      "sourceFile": "MDK-030.jpg",
+      "cardId": "MDK-030"
+    },
+    {
+      "sourceFile": "MDK-031.jpg",
+      "cardId": "MDK-031"
+    },
+    {
+      "sourceFile": "MDK-032.jpg",
+      "cardId": "MDK-032"
+    },
+    {
+      "sourceFile": "MDK-033.jpg",
+      "cardId": "MDK-033"
+    },
+    {
+      "sourceFile": "MDK-034.jpg",
+      "cardId": "MDK-034"
+    },
+    {
+      "sourceFile": "MDK-035.jpg",
+      "cardId": "MDK-035"
+    },
+    {
+      "sourceFile": "MDK-036.jpg",
+      "cardId": "MDK-036"
+    }
+  ]
+}

@@ -7,11 +7,12 @@ export type CardDefinitionBase = {
   type: CardType;
   factionId: string | null;
   subtype: string | null;
-  image: { board: string | null; detail: string | null };
+  image?: { board?: string | null; detail?: string | null } | string | null;
   setId: string;
   collectorNumber: string;
   rarity: string;
   status: CardStatus;
+  keywords?: string[];
 };
 
 export type CharacterCardDefinition = CardDefinitionBase & {
@@ -39,6 +40,7 @@ export type VerseCardDefinition = CardDefinitionBase & {
 
 export type EssenceCardDefinition = CardDefinitionBase & {
   type: "ESSENCE";
+  essenceKind?: "BASIC" | "SPECIAL";
   rulesText: string | null;
 };
 

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "factionId": "CAOS",
+  "source": "Caos-20260826T204700Z-1-001.zip",
+  "width": 815,
+  "height": 1110,
+  "assets": [
+    { "sourceFile": "d562c04a-c54a-47eb-92aa-4b4184cc57c6.jpg", "cardId": "MDK-055" },
+    { "sourceFile": "fbe8516d-2de7-4727-8f8a-f378dd043a59.jpg", "cardId": "MDK-056" },
+    { "sourceFile": "16c31a3d-d4f7-4f6a-b439-4bdaf224a470.jpg", "cardId": "MDK-057" },
+    { "sourceFile": "2da11227-fee1-4b5d-abea-10ca39dc4022.jpg", "cardId": "MDK-058" },
+    { "sourceFile": "09846f31-ef98-45f3-bac9-ac81c1c6c844.jpg", "cardId": "MDK-059" },
+    { "sourceFile": "9d724709-c4bb-4249-be84-2148e1727ef0.jpg", "cardId": "MDK-060" },
+    { "sourceFile": "361b239d-4bc1-4889-8f6e-d96ed2a0b372.jpg", "cardId": "MDK-061" },
+    { "sourceFile": "b5493349-0a69-4a15-bde3-5df1bf3aa15a.jpg", "cardId": "MDK-062" },
+    { "sourceFile": "505acb45-0a67-4782-befc-6e35718a081e.jpg", "cardId": "MDK-063" },
+    { "sourceFile": "c909341b-fa32-4581-aaf0-608a2c02eba2.jpg", "cardId": "MDK-064" },
+    { "sourceFile": "31ffb237-5bce-46c7-a810-3c63faadbe4c.jpg", "cardId": "MDK-065" },
+    { "sourceFile": "1d8e2083-a22e-4226-8b50-6ce0cd019150.jpg", "cardId": "MDK-066" },
+    { "sourceFile": "3cafcd74-2dba-495a-8966-38b67e528776.jpg", "cardId": "MDK-067" },
+    { "sourceFile": "04c7f436-54a2-4e68-b25e-7749be0a0b61.jpg", "cardId": "MDK-068" },
+    { "sourceFile": "50c8560e-ada1-4b0e-9309-1b4d52541776.jpg", "cardId": "MDK-069" },
+    { "sourceFile": "5acc257f-4239-4ce9-a4d2-eb010c7839e3.jpg", "cardId": "MDK-070" },
+    { "sourceFile": "c8600ae4-0fd4-4b33-859a-a1872376c208.jpg", "cardId": "MDK-071" },
+    { "sourceFile": "575e09e3-355e-4b7b-8b84-d83db2ed081a.jpg", "cardId": "MDK-072" }
+  ]
+}
