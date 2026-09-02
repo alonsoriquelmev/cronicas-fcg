@@ -7,6 +7,7 @@ export type GameAction =
   | { type: "SEARCH_MAIN_DECK"; playerId: PlayerId }
   | { type: "REORDER_DECK_LOOK"; playerId: PlayerId; orderedInstanceIds: string[] }
   | { type: "RESOLVE_DECK_LOOK"; playerId: PlayerId; instanceIds: string[]; destination: "HAND" | "GRAVEYARD" | "TOP" | "BOTTOM" | "SHUFFLE"; orderedInstanceIds?: string[] }
+  | { type: "SET_DECK_SEARCH_REVEALED"; playerId: PlayerId; instanceIds: string[]; revealed: boolean }
   | { type: "RESOLVE_DECK_SEARCH"; playerId: PlayerId; instanceIds: string[]; destination: "HAND" | "GRAVEYARD" | "FIELD" }
   | { type: "CLOSE_DECK_SEARCH"; playerId: PlayerId }
   | { type: "SHUFFLE_MAIN_DECK"; playerId: PlayerId; orderedInstanceIds?: string[] }

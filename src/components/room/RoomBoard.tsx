@@ -72,6 +72,7 @@ type RoomView = {
     >;
     cardInstances: ViewCard[];
     deckLook?: DeckLookState | null;
+    deckReveal?: { playerId: string; instanceIds: string[] } | null;
     pendingStatChanges?: Record<string, CharacterStatChangeProposal>;
     pendingVirtualEssenceChanges?: Record<string, VirtualEssenceChangeProposal>;
     characterMarkers?: Record<string, CharacterMarker[]>;
@@ -128,9 +129,26 @@ export function RoomBoard({
   const [restoreCardId, setRestoreCardId] = useState<string | null>(null);
   const [virtualEssenceEditor, setVirtualEssenceEditor] = useState(false);
   const [finishIntent, setFinishIntent] = useState<FinishIntent | null>(null);
+  const previousActivePlayerRef = useRef<string | null>(view.game?.activePlayerId ?? null);
+  const turnPopupTimeoutRef = useRef<number | null>(null);
+  const [turnPopupPlayerId, setTurnPopupPlayerId] = useState<string | null>(null);
   const me = view.playerId;
   const opponent = view.players.find((player) => player.playerId !== me);
+  useEffect(() => {
+    const activePlayerId = view.game?.activePlayerId;
+    if (!activePlayerId || previousActivePlayerRef.current === activePlayerId) return;
+    previousActivePlayerRef.current = activePlayerId;
+    setTurnPopupPlayerId(activePlayerId);
+    if (turnPopupTimeoutRef.current !== null) window.clearTimeout(turnPopupTimeoutRef.current);
+    turnPopupTimeoutRef.current = window.setTimeout(() => setTurnPopupPlayerId(null), 2800);
+  }, [view.game?.activePlayerId]);
+  useEffect(() => () => {
+    if (turnPopupTimeoutRef.current !== null) window.clearTimeout(turnPopupTimeoutRef.current);
+  }, []);
   const cards = view.game?.cardInstances ?? [];
+  const deckRevealKey = view.game?.deckReveal
+    ? `${view.game.deckReveal.playerId}:${view.game.deckReveal.instanceIds.join(",")}`
+    : null;
   const definitions = Object.fromEntries(
     cards.flatMap((card) =>
       card.definition ? [[card.cardDefinitionId, card.definition]] : [],
@@ -354,6 +372,12 @@ export function RoomBoard({
             {error}
           </p>
         )}
+        {turnPopupPlayerId && (
+          <TurnChangePopup
+            ownTurn={turnPopupPlayerId === me}
+            onClose={() => setTurnPopupPlayerId(null)}
+          />
+        )}
         <div className="mx-auto flex min-h-0 w-full max-w-[1700px] flex-1 gap-3 overflow-visible py-1">
           <section
             data-testid="board-column"
@@ -508,8 +532,18 @@ export function RoomBoard({
           <DeckSearchDialog
             cards={view.game.deckLook.orderedInstanceIds.map((instanceId) => cards.find((card) => card.instanceId === instanceId)).filter((card): card is ViewCard => Boolean(card))}
             allCards={cards}
+            revealedInstanceIds={view.game.deckLook.revealedInstanceIds ?? []}
             onClose={() => void run({ type: "CLOSE_DECK_SEARCH", playerId: me })}
+            onSetRevealed={(instanceIds, revealed) => run({ type: "SET_DECK_SEARCH_REVEALED", playerId: me, instanceIds, revealed })}
             onResolve={(instanceIds, destination) => run({ type: "RESOLVE_DECK_SEARCH", playerId: me, instanceIds, destination })}
+            onInspect={inspect}
+          />
+        )}
+        {view.game.deckReveal && (
+          <DeckSearchRevealDialog
+            key={deckRevealKey}
+            cards={view.game.deckReveal.instanceIds.map((instanceId) => cards.find((card) => card.instanceId === instanceId)).filter((card): card is ViewCard => Boolean(card))}
+            playerName={view.players.find((player) => player.playerId === view.game!.deckReveal!.playerId)?.displayName ?? "El oponente"}
             onInspect={inspect}
           />
         )}
@@ -724,6 +758,29 @@ function TurnPanel({
         </button>
       )}
     </section>
+  );
+}
+
+function TurnChangePopup({ ownTurn, onClose }: { ownTurn: boolean; onClose: () => void }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={ownTurn ? "Tu turno" : "Turno del oponente"}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/25 p-4"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <Image
+        src={ownTurn ? "/assets/turn-own.png" : "/assets/turn-opponent.png"}
+        alt={ownTurn ? "Tu turno" : "Turno oponente"}
+        width={2048}
+        height={768}
+        priority
+        className="h-auto w-[min(92vw,1100px)] object-contain"
+      />
+    </div>
   );
 }
 
@@ -2372,13 +2429,17 @@ function DeckLookDialog({
 function DeckSearchDialog({
   cards,
   allCards,
+  revealedInstanceIds,
   onClose,
+  onSetRevealed,
   onResolve,
   onInspect,
 }: {
   cards: ViewCard[];
   allCards: ViewCard[];
+  revealedInstanceIds: string[];
   onClose: () => void;
+  onSetRevealed: (instanceIds: string[], revealed: boolean) => Promise<boolean>;
   onResolve: (instanceIds: string[], destination: "HAND" | "GRAVEYARD" | "FIELD") => Promise<boolean>;
   onInspect: (card: ViewCard) => void;
 }) {
@@ -2397,6 +2458,8 @@ function DeckSearchDialog({
     .map((instanceId) => allCardsById.get(instanceId) ?? ordered.find((card) => card.instanceId === instanceId))
     .filter((card): card is ViewCard => Boolean(card));
   const canSendToField = selectedCards.length > 0 && selectedCards.every((card) => card.definition?.type === "CHARACTER" || card.definition?.type === "RELIC");
+  const revealedIds = new Set(revealedInstanceIds);
+  const selectedAreRevealed = selectedIds.length > 0 && selectedIds.every((instanceId) => revealedIds.has(instanceId));
   const destinationLabels: Record<SearchDestination, string> = {
     HAND: "MANO",
     GRAVEYARD: "CEMENTERIO",
@@ -2424,6 +2487,12 @@ function DeckSearchDialog({
       }));
       setSelected((current) => current.filter((instanceId) => !selectedIds.includes(instanceId)));
     }
+    setResolving(false);
+  };
+  const setSelectedRevealed = async () => {
+    if (!selectedIds.length || resolving) return;
+    setResolving(true);
+    await onSetRevealed(selectedIds, !selectedAreRevealed);
     setResolving(false);
   };
 
@@ -2472,15 +2541,43 @@ function DeckSearchDialog({
                   </label>
                 </div>
                 {destination && <div data-testid={`deck-search-destination-${card.instanceId}`} className="mb-1 border border-amber-200/30 bg-amber-950/40 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wider text-amber-100">{destinationLabels[destination]}</div>}
+                {!destination && revealedIds.has(card.instanceId) && <div data-testid={`deck-search-revealed-${card.instanceId}`} className="mb-1 border border-sky-200/40 bg-sky-950/45 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wider text-sky-100">Mostrada al oponente</div>}
                 <PublicCard card={currentCard} size="sm" onInspect={() => onInspect(currentCard)} onContextMenu={(event) => event.preventDefault()} />
               </article>
             );
           })}
         </div>
         <div className="mt-5 flex flex-wrap justify-center gap-2 border-t border-white/10 pt-4">
+          <button type="button" disabled={!selectedIds.length || resolving} className="border border-sky-300/40 px-3 py-2 text-xs text-sky-100 disabled:opacity-30" onClick={() => void setSelectedRevealed()}>{selectedAreRevealed ? "Ocultar al oponente" : "Mostrar al oponente"}</button>
           <button type="button" disabled={!selectedIds.length || resolving} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-30" onClick={() => void resolve("HAND")}>Enviar a la mano</button>
           <button type="button" disabled={!selectedIds.length || resolving} className="border border-rose-300/40 px-3 py-2 text-xs text-rose-100 disabled:opacity-30" onClick={() => void resolve("GRAVEYARD")}>Enviar al cementerio</button>
           <button type="button" disabled={!selectedIds.length || resolving || !canSendToField} className="border border-amber-300/40 px-3 py-2 text-xs text-amber-100 disabled:opacity-30" onClick={() => void resolve("FIELD")}>Enviar al campo</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function DeckSearchRevealDialog({ cards, playerName, onInspect }: { cards: ViewCard[]; playerName: string; onInspect: (card: ViewCard) => void }) {
+  const [open, setOpen] = useState(true);
+  if (!open) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Cartas mostradas por el oponente"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) setOpen(false);
+      }}
+    >
+      <section className="max-h-[85vh] w-full max-w-4xl overflow-auto border border-sky-200/30 bg-[#171311] p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div><h2 className="text-sm uppercase tracking-[0.2em] text-sky-100">Cartas mostradas</h2><p className="mt-1 text-xs text-zinc-400">{playerName} muestra {cards.length} {cards.length === 1 ? "carta" : "cartas"} de su mazo.</p></div>
+          <button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={() => setOpen(false)}>Cerrar</button>
+        </div>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          {cards.map((card) => <PublicCard key={card.instanceId} card={card} size="md" onInspect={() => onInspect(card)} onContextMenu={(event) => event.preventDefault()} />)}
         </div>
       </section>
     </div>

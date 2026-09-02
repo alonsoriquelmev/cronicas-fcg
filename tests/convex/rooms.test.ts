@@ -113,6 +113,23 @@ describe("MISSION_002 multiplayer boundaries", () => {
     expect(view.publicCounts.B.ESSENCE_DECK).toBe(2);
   });
 
+  it("shows only explicitly revealed searched cards to the opponent", () => {
+    let state: GameState = createInitialState("room-test", "A", "B", "A", "B");
+    state = applyGameAction(state, { type: "SEARCH_MAIN_DECK", playerId: "B" }, mockCardDefinitionsById);
+    const reveal = { type: "SET_DECK_SEARCH_REVEALED" as const, playerId: "B", instanceIds: ["B-main-1"], revealed: true };
+    expect(() => assertAuthorizedAction(state, reveal, "B")).not.toThrow();
+    expect(() => assertAuthorizedAction(state, reveal, "A")).toThrow();
+    state = applyGameAction(state, reveal, mockCardDefinitionsById);
+
+    const opponentView = playerView(state, "A");
+    expect(opponentView.deckReveal).toEqual({ playerId: "B", instanceIds: ["B-main-1"] });
+    expect(opponentView.cardInstances.find((card) => card.instanceId === "B-main-1")).toHaveProperty("definition");
+    expect(opponentView.cardInstances.find((card) => card.instanceId === "B-main-2")).toBeUndefined();
+
+    state = applyGameAction(state, { type: "RESOLVE_DECK_SEARCH", playerId: "B", instanceIds: ["B-main-1"], destination: "HAND" }, mockCardDefinitionsById);
+    expect(playerView(state, "A").deckReveal).toBeNull();
+  });
+
   it("publishes authorized deck counts for both players and reduces them after drawing", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
     const own = playerView(state, "A");

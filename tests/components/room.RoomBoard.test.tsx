@@ -25,6 +25,7 @@ function boardView() {
       ...state,
       cardInstances: Object.values(state.cardInstances).map((card) => ({ ...card, definition: mockCardDefinitionsById[card.cardDefinitionId] })),
       deckLook: null as DeckLookState | null,
+      deckReveal: null as { playerId: string; instanceIds: string[] } | null,
       hiddenCounts: {
         PLAYER_LOCAL: { HAND: 4, MAIN_DECK: 2, ESSENCE_DECK: 2 },
         PLAYER_OPPONENT: { HAND: 2, MAIN_DECK: 1, ESSENCE_DECK: 1 },
@@ -165,6 +166,8 @@ describe("RoomBoard terminal confirmations", () => {
     expect(screen.getAllByTestId(/^deck-search-card-/)).toHaveLength(2);
     await user.click(screen.getByRole("button", { name: "Seleccionar todo" }));
     expect(screen.getByText(/Seleccionadas: 2\./)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Mostrar al oponente" }));
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "SET_DECK_SEARCH_REVEALED", playerId: "PLAYER_LOCAL", instanceIds: ["local-main-1", "local-main-2"], revealed: true } }));
     await user.click(screen.getByRole("button", { name: "Enviar a la mano" }));
 
     await waitFor(() => expect(screen.getAllByTestId(/^deck-search-destination-/)).toHaveLength(2));
@@ -176,6 +179,21 @@ describe("RoomBoard terminal confirmations", () => {
     expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "CLOSE_DECK_SEARCH", playerId: "PLAYER_LOCAL" } }));
   });
 
+  it("shows an opponent popup containing only cards revealed from a deck search", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    const revealed = view.game.cardInstances.find((card) => card.instanceId === "opponent-main-1")!;
+    revealed.zone = "DECK_LOOK";
+    revealed.faceUp = true;
+    view.game.deckReveal = { playerId: "PLAYER_OPPONENT", instanceIds: [revealed.instanceId] };
+    render(<RoomBoard view={view} sessionToken="session" />);
+
+    const popup = screen.getByRole("dialog", { name: "Cartas mostradas por el oponente" });
+    expect(within(popup).getByTestId(`game-card-${revealed.instanceId}`)).toBeTruthy();
+    await user.click(within(popup).getByRole("button", { name: "Cerrar" }));
+    expect(screen.queryByRole("dialog", { name: "Cartas mostradas por el oponente" })).toBeNull();
+  });
+
   it("opens the Inspector with a left click on a public opponent card", async () => {
     const user = userEvent.setup();
     render(<RoomBoard view={boardView()} sessionToken="session" />);
@@ -183,6 +201,20 @@ describe("RoomBoard terminal confirmations", () => {
     await user.click(screen.getByTestId("game-card-opponent-field-char"));
 
     expect(screen.getByRole("dialog", { name: /Inspecci/ })).toBeTruthy();
+  });
+
+  it("shows the turn change popup when the active player changes and closes it outside", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    const rendered = render(<RoomBoard view={view} sessionToken="session" />);
+
+    view.game.activePlayerId = "PLAYER_OPPONENT";
+    rendered.rerender(<RoomBoard view={view} sessionToken="session" />);
+
+    const popup = await screen.findByRole("dialog", { name: "Turno del oponente" });
+    expect(within(popup).getByAltText("Turno oponente").getAttribute("src")).toContain("turn-opponent.png");
+    await user.click(popup);
+    expect(screen.queryByRole("dialog", { name: "Turno del oponente" })).toBeNull();
   });
 
   it("shows base and attached Relic modifiers in the Character Field overlay", () => {

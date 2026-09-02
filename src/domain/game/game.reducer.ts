@@ -7,7 +7,7 @@ const copy = (state: GameState): GameState => ({
   ...state,
   players: { ...state.players },
   cardInstances: { ...state.cardInstances },
-  deckLooks: Object.fromEntries(Object.entries(state.deckLooks ?? {}).map(([playerId, look]) => [playerId, { ...look, orderedInstanceIds: [...look.orderedInstanceIds] }])),
+  deckLooks: Object.fromEntries(Object.entries(state.deckLooks ?? {}).map(([playerId, look]) => [playerId, { ...look, orderedInstanceIds: [...look.orderedInstanceIds], revealedInstanceIds: [...(look.revealedInstanceIds ?? [])] }])),
   pendingStatChanges: { ...(state.pendingStatChanges ?? {}) },
   pendingVirtualEssenceChanges: { ...(state.pendingVirtualEssenceChanges ?? {}) },
   characterMarkers: Object.fromEntries(Object.entries(state.characterMarkers ?? {}).map(([characterInstanceId, markers]) => [characterInstanceId, markers.map((marker) => ({ ...marker }))])),
@@ -25,7 +25,7 @@ function move(state: GameState, instanceId: string, zone: CardInstance["zone"], 
   const card = requireCard(state, instanceId);
   const nextController = controllerId ?? card.controllerId;
   const orderedByController = zone === "VERSE_RESOLUTION" ? undefined : nextController;
-  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), tapped: zone === "HAND" ? false : card.tapped, faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null };
+  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), tapped: zone === "HAND" ? false : card.tapped, faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null, manualAttackModifier: zone === "FIELD" ? card.manualAttackModifier : 0, manualHealthModifier: zone === "FIELD" ? card.manualHealthModifier : 0 };
   if (zone !== "FIELD" && state.pendingStatChanges?.[instanceId]) delete state.pendingStatChanges[instanceId];
   if (zone !== "FIELD" && state.characterMarkers?.[instanceId]) delete state.characterMarkers[instanceId];
   if (zone !== "FIELD" && card.zone === "FIELD") {
@@ -107,7 +107,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       deck.forEach((card) => {
         next.cardInstances[card.instanceId] = { ...card, zone: "DECK_LOOK", faceUp: true, attachedToInstanceId: null };
       });
-      next.deckLooks![action.playerId] = { orderedInstanceIds: deck.map((card) => card.instanceId), mode: "SEARCH" };
+      next.deckLooks![action.playerId] = { orderedInstanceIds: deck.map((card) => card.instanceId), mode: "SEARCH", revealedInstanceIds: [] };
       break;
     }
     case "REORDER_DECK_LOOK": {
@@ -119,7 +119,17 @@ export function applyGameAction(state: GameState, action: GameAction, definition
         const card = requireCard(next, instanceId);
         next.cardInstances[instanceId] = { ...card, zoneOrder };
       });
-      next.deckLooks![action.playerId] = { orderedInstanceIds: [...action.orderedInstanceIds], mode: look.mode ?? "LOOK" };
+      next.deckLooks![action.playerId] = { orderedInstanceIds: [...action.orderedInstanceIds], mode: look.mode ?? "LOOK", revealedInstanceIds: [...(look.revealedInstanceIds ?? [])] };
+      break;
+    }
+    case "SET_DECK_SEARCH_REVEALED": {
+      const look = deckLook(next, action.playerId);
+      if (look.mode !== "SEARCH") throw new Error("No hay una busqueda activa del Mazo Principal");
+      const requested = new Set(action.instanceIds);
+      if (requested.size === 0 || action.instanceIds.length !== requested.size || action.instanceIds.some((instanceId) => !look.orderedInstanceIds.includes(instanceId))) throw new Error("La seleccion no pertenece a la busqueda");
+      const current = new Set(look.revealedInstanceIds ?? []);
+      action.instanceIds.forEach((instanceId) => action.revealed ? current.add(instanceId) : current.delete(instanceId));
+      next.deckLooks![action.playerId] = { ...look, revealedInstanceIds: look.orderedInstanceIds.filter((instanceId) => current.has(instanceId)) };
       break;
     }
     case "RESOLVE_DECK_LOOK": {
@@ -155,7 +165,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
         });
       }
       action.instanceIds.forEach((instanceId) => move(next, instanceId, action.destination, action.playerId, null));
-      next.deckLooks![action.playerId] = { orderedInstanceIds: look.orderedInstanceIds.filter((instanceId) => !requested.has(instanceId)), mode: "SEARCH" };
+      next.deckLooks![action.playerId] = { orderedInstanceIds: look.orderedInstanceIds.filter((instanceId) => !requested.has(instanceId)), mode: "SEARCH", revealedInstanceIds: (look.revealedInstanceIds ?? []).filter((instanceId) => !requested.has(instanceId)) };
       break;
     }
     case "CLOSE_DECK_SEARCH": {
@@ -249,10 +259,12 @@ export function applyGameAction(state: GameState, action: GameAction, definition
     case "DEVASTATE_CARD": {
       const card = requireCard(next, action.instanceId);
       if (card.zone !== "FIELD" && card.zone !== "GRAVEYARD") throw new Error("Solo se pueden devastar cartas del Campo o Cementerio");
-      next.cardInstances[card.instanceId] = { ...card, zone: "DEVASTATED", zoneOrder: nextOrder(next, "DEVASTATED", card.controllerId), faceUp: true, attachedToInstanceId: null, devastatedFromZone: card.zone, devastatedFromAttachedToInstanceId: card.attachedToInstanceId };
+      next.cardInstances[card.instanceId] = { ...card, zone: "DEVASTATED", zoneOrder: nextOrder(next, "DEVASTATED", card.controllerId), faceUp: true, attachedToInstanceId: null, manualAttackModifier: 0, manualHealthModifier: 0, devastatedFromZone: card.zone, devastatedFromAttachedToInstanceId: card.attachedToInstanceId };
       if (card.zone === "FIELD") {
         for (const relic of Object.values(next.cardInstances)) if (relic.attachedToInstanceId === card.instanceId) next.cardInstances[relic.instanceId] = { ...relic, attachedToInstanceId: null };
       }
+      if (next.pendingStatChanges?.[card.instanceId]) delete next.pendingStatChanges[card.instanceId];
+      if (next.characterMarkers?.[card.instanceId]) delete next.characterMarkers[card.instanceId];
       break;
     }
     case "REVERT_DEVASTATION": {

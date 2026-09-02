@@ -31,6 +31,12 @@ export type DeckLookMode = "LOOK" | "SEARCH";
 export type DeckLookState = {
   orderedInstanceIds: CardInstanceId[];
   mode?: DeckLookMode;
+  revealedInstanceIds?: CardInstanceId[];
+};
+
+export type DeckSearchReveal = {
+  playerId: PlayerId;
+  instanceIds: CardInstanceId[];
 };
 
 export type CharacterStatChangeProposal = {
@@ -78,6 +84,7 @@ export type PlayerViewCard = CardView | FaceDownPublicCardView;
 export type PlayerView = Omit<GameState, "cardInstances" | "deckLooks"> & {
   cardInstances: PlayerViewCard[];
   deckLook: DeckLookState | null;
+  deckReveal: DeckSearchReveal | null;
   hiddenCounts: Record<PlayerId, HiddenZoneCounts>;
   publicCounts: Record<PlayerId, HiddenZoneCounts>;
 };

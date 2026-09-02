@@ -91,10 +91,18 @@ export function playerView(state: GameState, viewerId: string) {
       if (counts) counts[card.zone === "DECK_LOOK" ? "MAIN_DECK" : card.zone] += 1;
     }
   }
+  const opponentRevealEntry = Object.entries(state.deckLooks ?? {}).find(([playerId, look]) => playerId !== viewerId && look.mode === "SEARCH" && (look.revealedInstanceIds?.length ?? 0) > 0);
+  const deckReveal = opponentRevealEntry
+    ? {
+        playerId: opponentRevealEntry[0],
+        instanceIds: (opponentRevealEntry[1].revealedInstanceIds ?? []).filter((instanceId) => state.cardInstances[instanceId]?.zone === "DECK_LOOK"),
+      }
+    : null;
+  const revealedSearchIds = new Set(deckReveal?.instanceIds ?? []);
   const cardInstances: PlayerViewCard[] = [];
   for (const card of Object.values(state.cardInstances)) {
     const publicZone = card.zone === "FIELD" || card.zone === "GRAVEYARD" || card.zone === "SANCTUARY" || card.zone === "ESSENCE_ZONE" || card.zone === "VERSE_RESOLUTION" || card.zone === "DEVASTATED";
-    const visible = publicZone || card.ownerId === viewerId && (card.zone === "HAND" || card.zone === "DECK_LOOK");
+    const visible = publicZone || card.ownerId === viewerId && (card.zone === "HAND" || card.zone === "DECK_LOOK") || card.zone === "DECK_LOOK" && revealedSearchIds.has(card.instanceId);
     if (!visible || card.zone === "MAIN_DECK" || card.zone === "ESSENCE_DECK") continue;
     if (publicZone && !card.faceUp && card.ownerId !== viewerId) {
       cardInstances.push({ ...card, cardDefinitionId: "", definition: null, hidden: true } satisfies FaceDownPublicCardView);
@@ -109,7 +117,7 @@ export function playerView(state: GameState, viewerId: string) {
       return character?.zone === "FIELD" && definitions[character.cardDefinitionId as keyof typeof definitions]?.type === "CHARACTER";
     }),
   );
-  return { gameId: state.gameId, revision: state.revision, turnNumber: state.turnNumber, activePlayerId: state.activePlayerId, startingPlayerId: state.startingPlayerId, phase: state.phase, players: state.players, cardInstances, deckLook: state.deckLooks?.[viewerId] ?? null, pendingStatChanges: state.pendingStatChanges ?? {}, pendingVirtualEssenceChanges: state.pendingVirtualEssenceChanges ?? {}, characterMarkers, hiddenCounts, publicCounts: hiddenCounts };
+  return { gameId: state.gameId, revision: state.revision, turnNumber: state.turnNumber, activePlayerId: state.activePlayerId, startingPlayerId: state.startingPlayerId, phase: state.phase, players: state.players, cardInstances, deckLook: state.deckLooks?.[viewerId] ?? null, deckReveal: deckReveal?.instanceIds.length ? deckReveal : null, pendingStatChanges: state.pendingStatChanges ?? {}, pendingVirtualEssenceChanges: state.pendingVirtualEssenceChanges ?? {}, characterMarkers, hiddenCounts, publicCounts: hiddenCounts };
 }
 
 function shuffled<T>(items: T[]) {
