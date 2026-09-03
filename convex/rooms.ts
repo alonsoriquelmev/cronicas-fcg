@@ -117,7 +117,7 @@ export function playerView(state: GameState, viewerId: string) {
       return character?.zone === "FIELD" && definitions[character.cardDefinitionId as keyof typeof definitions]?.type === "CHARACTER";
     }),
   );
-  return { gameId: state.gameId, revision: state.revision, turnNumber: state.turnNumber, activePlayerId: state.activePlayerId, startingPlayerId: state.startingPlayerId, phase: state.phase, players: state.players, cardInstances, deckLook: state.deckLooks?.[viewerId] ?? null, deckReveal: deckReveal?.instanceIds.length ? deckReveal : null, pendingStatChanges: state.pendingStatChanges ?? {}, pendingVirtualEssenceChanges: state.pendingVirtualEssenceChanges ?? {}, characterMarkers, hiddenCounts, publicCounts: hiddenCounts };
+  return { gameId: state.gameId, revision: state.revision, turnNumber: state.turnNumber, activePlayerId: state.activePlayerId, startingPlayerId: state.startingPlayerId, phase: state.phase, phaseProgress: state.phaseProgress ?? null, players: state.players, cardInstances, deckLook: state.deckLooks?.[viewerId] ?? null, deckReveal: deckReveal?.instanceIds.length ? deckReveal : null, pendingStatChanges: state.pendingStatChanges ?? {}, pendingVirtualEssenceChanges: state.pendingVirtualEssenceChanges ?? {}, characterMarkers, hiddenCounts, publicCounts: hiddenCounts };
 }
 
 function shuffled<T>(items: T[]) {

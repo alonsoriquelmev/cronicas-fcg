@@ -53,6 +53,13 @@ export type VirtualEssenceChangeProposal = {
   amount: number;
 };
 
+export type TurnPhaseProgress = {
+  turnNumber: number;
+  playerId: PlayerId;
+  essenceDrawn: boolean;
+  mainCardDrawn: boolean;
+};
+
 export type PlayerGameState = {
   playerId: PlayerId;
   displayName: string;
@@ -68,6 +75,7 @@ export type GameState = {
   activePlayerId: PlayerId;
   startingPlayerId: PlayerId;
   phase: GamePhase;
+  phaseProgress?: TurnPhaseProgress;
   players: Record<PlayerId, PlayerGameState>;
   cardInstances: Record<CardInstanceId, CardInstance>;
   deckLooks?: Record<PlayerId, DeckLookState>;

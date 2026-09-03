@@ -16,6 +16,7 @@ import { api } from "@/../convex/_generated/api";
 import type { CardDefinition } from "@/domain/cards/card.types";
 import type { GameAction } from "@/domain/game/game.actions";
 import type { CardInstance, CharacterStatChangeProposal, DeckLookState, GamePhase, VirtualEssenceChangeProposal } from "@/domain/game/game.types";
+import { getPhaseBlockers, phaseBlockerLabels, phaseBlockersFromError } from "@/domain/game/phase-rules";
 import {
   CHARACTER_MARKER_KINDS,
   CHARACTER_MARKER_LABELS,
@@ -65,6 +66,8 @@ type RoomView = {
     revision: number;
     turnNumber: number;
     activePlayerId: string;
+    startingPlayerId: string;
+    phaseProgress?: { turnNumber: number; playerId: string; essenceDrawn: boolean; mainCardDrawn: boolean } | null;
     phase: GamePhase;
     players: Record<
       string,
@@ -118,6 +121,7 @@ export function RoomBoard({
   const submit = useMutation(api.rooms.submitGameAction);
   const finish = useMutation(api.rooms.finishRoom);
   const [error, setError] = useState("");
+  const [phaseBlockers, setPhaseBlockers] = useState<string[]>([]);
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [inspected, setInspected] = useState<ViewCard | null>(null);
   const [gallery, setGallery] = useState<{
@@ -158,6 +162,13 @@ export function RoomBoard({
   const run = async (action: GameAction): Promise<boolean> => {
     if (view.status !== "IN_GAME") return false;
     setError("");
+    if (action.type === "SET_PHASE" && view.game) {
+      const blockers = getPhaseBlockers(view.game, me, action.phase);
+      if (blockers.length > 0) {
+        setPhaseBlockers(blockers);
+        return false;
+      }
+    }
     try {
       await submit({
         code: view.code,
@@ -167,7 +178,10 @@ export function RoomBoard({
       });
       return true;
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Accion rechazada");
+      const message = reason instanceof Error ? reason.message : "Accion rechazada";
+      const blockers = action.type === "SET_PHASE" ? phaseBlockersFromError(message) : [];
+      if (blockers.length > 0) setPhaseBlockers(blockers);
+      else setError(message);
       return false;
     }
   };
@@ -484,6 +498,9 @@ export function RoomBoard({
           definition={inspected?.definition ?? undefined}
           onClose={() => setInspected(null)}
         />
+        {phaseBlockers.length > 0 && (
+          <PhaseBlockerPopup blockers={phaseBlockers} onClose={() => setPhaseBlockers([])} />
+        )}
         {gallery && (
           <GraveyardGallery
             cards={zone(cards, gallery.ownerId, gallery.zone)}
@@ -758,6 +775,39 @@ function TurnPanel({
         </button>
       )}
     </section>
+  );
+}
+
+function PhaseBlockerPopup({ blockers, onClose }: { blockers: string[]; onClose: () => void }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Acciones pendientes de la fase"
+      className="fixed inset-0 z-[75] flex items-center justify-center bg-black/45 p-4"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="w-full max-w-sm border border-amber-200/35 bg-[#171311] p-5 shadow-2xl">
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-200/70">Fase incompleta</p>
+        <h2 className="mt-2 text-lg font-semibold text-amber-50">Antes de continuar</h2>
+        <ul className="mt-4 space-y-2 text-sm text-zinc-200">
+          {blockers.map((blocker) => (
+            <li key={blocker} className="border-l border-amber-300/50 pl-3">
+              {phaseBlockerLabels[blocker as keyof typeof phaseBlockerLabels] ?? blocker}
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          className="mt-5 w-full border border-amber-200/40 px-3 py-2 text-xs uppercase tracking-widest text-amber-100 hover:bg-amber-200/10"
+          onClick={onClose}
+        >
+          Entendido
+        </button>
+      </section>
+    </div>
   );
 }
 

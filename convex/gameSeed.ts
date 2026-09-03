@@ -18,7 +18,7 @@ export function createInitialState(roomId: string, playerOneId: string, playerTw
     card(`${playerTwoId}-main-1`, "mock-char-b", playerTwoId, "MAIN_DECK", 0, false), card(`${playerTwoId}-main-2`, "mock-relic-b", playerTwoId, "MAIN_DECK", 1, false), card(`${playerTwoId}-hand-char`, "mock-char-a", playerTwoId, "HAND", 0), card(`${playerTwoId}-hand-relic`, "mock-relic-a", playerTwoId, "HAND", 1),
     card(`${playerTwoId}-essence-1`, "mock-essence-b", playerTwoId, "ESSENCE_DECK", 0, false), card(`${playerTwoId}-essence-2`, "mock-essence-a", playerTwoId, "ESSENCE_DECK", 1, false), card(`${playerTwoId}-field-char`, "mock-char-a", playerTwoId, "FIELD", 0), card(`${playerTwoId}-sanctuary`, "mock-sanctuary", playerTwoId, "SANCTUARY", 0),
   ];
-  return { gameId: `game-${roomId}`, roomId, revision: 0, turnNumber: 1, activePlayerId: playerOneId, startingPlayerId: playerOneId, phase: "ALBA" as const, players: { [playerOneId]: { playerId: playerOneId, displayName: playerOneName, sanctuaryHp: 22, virtualEssenceCount: 0 }, [playerTwoId]: { playerId: playerTwoId, displayName: playerTwoName, sanctuaryHp: 22, virtualEssenceCount: 0 } }, cardInstances: Object.fromEntries(cards.map((item) => [item.instanceId, item])) };
+  return { gameId: `game-${roomId}`, roomId, revision: 0, turnNumber: 1, activePlayerId: playerOneId, startingPlayerId: playerOneId, phase: "ALBA" as const, phaseProgress: { turnNumber: 1, playerId: playerOneId, essenceDrawn: false, mainCardDrawn: false }, players: { [playerOneId]: { playerId: playerOneId, displayName: playerOneName, sanctuaryHp: 22, virtualEssenceCount: 0 }, [playerTwoId]: { playerId: playerTwoId, displayName: playerTwoName, sanctuaryHp: 22, virtualEssenceCount: 0 } }, cardInstances: Object.fromEntries(cards.map((item) => [item.instanceId, item])) };
 }
 
 function shuffle<T>(items: T[], random: () => number) {
@@ -42,5 +42,5 @@ export function createPreparedGameState(roomId: string, players: { playerId: str
     const sanctuary = definitions[loadout.sanctuary];
     gamePlayers[player.playerId] = { playerId: player.playerId, displayName: player.displayName, sanctuaryHp: sanctuary && "health" in sanctuary ? sanctuary.health : 0, virtualEssenceCount: 0 };
   }
-  return { gameId: `game-${roomId}`, roomId, revision: 0, turnNumber: 1, activePlayerId: startingPlayerId, startingPlayerId, phase: "ALBA", players: gamePlayers, cardInstances: Object.fromEntries(cards.map((item) => [item.instanceId, item])) };
+  return { gameId: `game-${roomId}`, roomId, revision: 0, turnNumber: 1, activePlayerId: startingPlayerId, startingPlayerId, phase: "ALBA", phaseProgress: { turnNumber: 1, playerId: startingPlayerId, essenceDrawn: false, mainCardDrawn: false }, players: gamePlayers, cardInstances: Object.fromEntries(cards.map((item) => [item.instanceId, item])) };
 }

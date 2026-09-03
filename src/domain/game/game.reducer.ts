@@ -2,6 +2,7 @@ import type { CardDefinition } from "../cards/card.types";
 import type { GameAction } from "./game.actions";
 import type { CardInstance, GameState } from "./game.types";
 import { isCharacterMarkerKind } from "./character-markers";
+import { getCurrentTurnPhaseProgress } from "./phase-rules";
 
 const copy = (state: GameState): GameState => ({
   ...state,
@@ -11,6 +12,7 @@ const copy = (state: GameState): GameState => ({
   pendingStatChanges: { ...(state.pendingStatChanges ?? {}) },
   pendingVirtualEssenceChanges: { ...(state.pendingVirtualEssenceChanges ?? {}) },
   characterMarkers: Object.fromEntries(Object.entries(state.characterMarkers ?? {}).map(([characterInstanceId, markers]) => [characterInstanceId, markers.map((marker) => ({ ...marker }))])),
+  phaseProgress: state.phaseProgress ? { ...state.phaseProgress } : undefined,
 });
 const cards = (state: GameState, zone: CardInstance["zone"], ownerId?: string) => Object.values(state.cardInstances).filter((c) => c.zone === zone && (!ownerId || c.controllerId === ownerId)).sort((a, b) => a.zoneOrder - b.zoneOrder);
 const nextOrder = (state: GameState, zone: CardInstance["zone"], ownerId?: string) => cards(state, zone, ownerId).reduce((max, card) => Math.max(max, card.zoneOrder), -1) + 1;
@@ -87,7 +89,10 @@ export function applyGameAction(state: GameState, action: GameAction, definition
     case "DRAW_CARD": {
       assertNoDeckLook(next, action.playerId);
       const card = cards(next, "MAIN_DECK", action.playerId)[0];
-      if (card) move(next, card.instanceId, "HAND", action.playerId);
+      if (card) {
+        move(next, card.instanceId, "HAND", action.playerId);
+        if (next.activePlayerId === action.playerId && next.phase === "AMANECER") next.phaseProgress = { ...getCurrentTurnPhaseProgress(next), mainCardDrawn: true };
+      }
       break;
     }
     case "LOOK_AT_MAIN_DECK": {
@@ -196,7 +201,10 @@ export function applyGameAction(state: GameState, action: GameAction, definition
     }
     case "DRAW_ESSENCE": {
       const card = cards(next, "ESSENCE_DECK", action.playerId)[0];
-      if (card) move(next, card.instanceId, "ESSENCE_ZONE", action.playerId);
+      if (card) {
+        move(next, card.instanceId, "ESSENCE_ZONE", action.playerId);
+        if (next.activePlayerId === action.playerId && next.phase === "ALBA") next.phaseProgress = { ...getCurrentTurnPhaseProgress(next), essenceDrawn: true };
+      }
       break;
     }
     case "RETURN_ESSENCE_TO_DECK_BOTTOM": move(next, action.instanceId, "ESSENCE_DECK", action.playerId); break;
@@ -302,7 +310,15 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       break;
     }
     case "SET_PHASE": next.phase = action.phase; break;
-    case "END_TURN": { const ids = Object.keys(next.players); const index = ids.indexOf(next.activePlayerId); next.activePlayerId = ids[(index + 1) % ids.length] ?? next.activePlayerId; next.turnNumber += 1; next.phase = "ALBA"; break; }
+    case "END_TURN": {
+      const ids = Object.keys(next.players);
+      const index = ids.indexOf(next.activePlayerId);
+      next.activePlayerId = ids[(index + 1) % ids.length] ?? next.activePlayerId;
+      next.turnNumber += 1;
+      next.phase = "ALBA";
+      next.phaseProgress = { turnNumber: next.turnNumber, playerId: next.activePlayerId, essenceDrawn: false, mainCardDrawn: false };
+      break;
+    }
   }
   return { ...next, revision: state.revision + 1 };
 }

@@ -2,19 +2,23 @@ import type { GameAction } from "../src/domain/game/game.actions";
 import type { CardDefinition } from "../src/domain/cards/card.types";
 import { definitions } from "./gameSeed";
 import { isCharacterMarkerKind } from "../src/domain/game/character-markers";
+import { getPhaseBlockers, phaseBlockerError } from "../src/domain/game/phase-rules";
 
 const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
 const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
 
 type AuthorityState = {
-  cardInstances: Record<string, { ownerId: string; controllerId: string; zone: string; cardDefinitionId: string; attachedToInstanceId: string | null; manualAttackModifier?: number; manualHealthModifier?: number }>;
+  cardInstances: Record<string, { ownerId: string; controllerId: string; zone: string; cardDefinitionId: string; attachedToInstanceId: string | null; tapped: boolean; manualAttackModifier?: number; manualHealthModifier?: number }>;
   players: Record<string, { virtualEssenceCount?: number }>;
   deckLooks?: Record<string, { orderedInstanceIds: string[]; mode?: "LOOK" | "SEARCH"; revealedInstanceIds?: string[] }>;
   pendingStatChanges?: Record<string, { proposalId: string; characterInstanceId: string; proposerId: string; attackDelta: number; healthDelta: number }>;
   pendingVirtualEssenceChanges?: Record<string, { proposalId: string; playerId: string; amount: number }>;
   characterMarkers?: Record<string, { markerId: string; kind: string }[]>;
-  activePlayerId?: string;
-  phase?: string;
+  activePlayerId: string;
+  startingPlayerId: string;
+  turnNumber: number;
+  phase: string;
+  phaseProgress?: { turnNumber: number; playerId: string; essenceDrawn: boolean; mainCardDrawn: boolean };
 };
 
 function characterStats(state: AuthorityState, characterInstanceId: string) {
@@ -174,6 +178,8 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
     const phases = ["ALBA", "AMANECER", "MEDIODIA", "ANOCHECER"];
     const currentIndex = phases.indexOf(String(state.phase));
     if (currentIndex < 0 || input.phase !== phases[currentIndex + 1]) throw new Error("Invalid phase transition");
+    const blockers = getPhaseBlockers(state as Parameters<typeof getPhaseBlockers>[0], actorId, input.phase as Parameters<typeof getPhaseBlockers>[2]);
+    if (blockers.length > 0) throw new Error(phaseBlockerError(blockers));
   }
   if (input.type === "END_TURN") {
     if (state.activePlayerId !== actorId) throw new Error("Only the active player can end the turn");
