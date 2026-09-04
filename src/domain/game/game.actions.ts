@@ -27,6 +27,7 @@ export type GameAction =
   | { type: "DETACH_RELIC"; relicInstanceId: string }
   | { type: "TAP_CARD"; instanceId: string }
   | { type: "UNTAP_CARD"; instanceId: string }
+  | { type: "UNTAP_ALL_ESSENCES"; playerId: PlayerId }
   | { type: "FLIP_FACE_UP"; instanceId: string }
   | { type: "FLIP_FACE_DOWN"; instanceId: string }
   | { type: "CHANGE_CARD_COUNTER"; instanceId: string; amount: number }

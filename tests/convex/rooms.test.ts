@@ -35,6 +35,7 @@ describe("MISSION_002 multiplayer boundaries", () => {
 
   it("allows only the owner to Tap and Untap Essence Zone cards", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "MEDIODIA";
     const ownEssence = state.cardInstances["A-essence-1"];
     ownEssence.zone = "ESSENCE_ZONE";
     const rivalEssence = state.cardInstances["B-essence-1"];
@@ -55,8 +56,25 @@ describe("MISSION_002 multiplayer boundaries", () => {
     expect(() => assertAuthorizedAction(state, { type: "TAP_CARD", instanceId: ownEssence.instanceId }, "A")).toThrow();
   });
 
+  it("blocks tapping during Alba and playing Characters or Relics outside Mediodia", () => {
+    const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.cardInstances["A-hand-char"].zone = "FIELD";
+    expect(() => assertAuthorizedAction(state, { type: "TAP_CARD", instanceId: "A-hand-char" }, "A")).toThrow("No se puede tapear");
+    state.cardInstances["A-hand-char"].zone = "HAND";
+    expect(() => assertAuthorizedAction(state, { type: "PLAY_CHARACTER", instanceId: "A-hand-char", playerId: "A" }, "A")).toThrow("solo pueden jugarse");
+    state.phase = "MEDIODIA";
+    expect(() => assertAuthorizedAction(state, { type: "PLAY_CHARACTER", instanceId: "A-hand-char", playerId: "A" }, "A")).not.toThrow();
+  });
+
+  it("authorizes the atomic action to untap only the active player's Essences", () => {
+    const state = createInitialState("room-test", "A", "B", "A", "B");
+    expect(() => assertAuthorizedAction(state, { type: "UNTAP_ALL_ESSENCES", playerId: "A" }, "A")).not.toThrow();
+    expect(() => assertAuthorizedAction(state, { type: "UNTAP_ALL_ESSENCES", playerId: "B" }, "A")).toThrow();
+  });
+
   it("publishes the tapped Essence state to the other player", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "MEDIODIA";
     state.cardInstances["A-essence-1"].zone = "ESSENCE_ZONE";
     const next = applyGameAction(state, { type: "TAP_CARD", instanceId: "A-essence-1" });
     const view = playerView(next, "B");
@@ -164,6 +182,7 @@ describe("MISSION_002 multiplayer boundaries", () => {
 
   it("authorizes own Character play and tap/untap but rejects rival manipulation", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "MEDIODIA";
     state.cardInstances["B-field-char"].ownerId = "A";
     state.cardInstances["B-field-char"].controllerId = "A";
     expect(() => assertAuthorizedAction(state, { type: "PLAY_CHARACTER", instanceId: "A-hand-char", playerId: "A" }, "A")).not.toThrow();
@@ -184,6 +203,7 @@ describe("MISSION_002 multiplayer boundaries", () => {
 
   it("rejects structurally invalid direct play and attachment actions", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "MEDIODIA";
     expect(() => assertAuthorizedAction(state, { type: "PLAY_CHARACTER", instanceId: "A-hand-relic", playerId: "A" }, "A")).toThrow();
     expect(() => assertAuthorizedAction(state, { type: "PLAY_RELIC", instanceId: "A-hand-relic", playerId: "A", attachedToInstanceId: "B-field-char" }, "A")).toThrow();
     expect(() => assertAuthorizedAction(state, { type: "PLAY_RELIC", instanceId: "A-hand-relic", playerId: "A", attachedToInstanceId: null }, "A")).toThrow();

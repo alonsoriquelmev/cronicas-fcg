@@ -10,7 +10,7 @@ type Zone = "MAIN_DECK" | "ESSENCE_DECK" | "HAND" | "FIELD" | "ESSENCE_ZONE" | "
 type Card = { instanceId: string; cardDefinitionId: string; ownerId: string; controllerId: string; zone: Zone; zoneOrder: number; tapped: boolean; faceUp: boolean; attachedToInstanceId: string | null; counter: number };
 const card = (instanceId: string, definitionId: string, playerId: string, zone: Zone, order: number, faceUp = true): Card => ({ instanceId, cardDefinitionId: definitionId, ownerId: playerId, controllerId: playerId, zone, zoneOrder: order, tapped: false, faceUp, attachedToInstanceId: null, counter: 0 });
 
-export function createInitialState(roomId: string, playerOneId: string, playerTwoId: string, playerOneName: string, playerTwoName: string) {
+export function createInitialState(roomId: string, playerOneId: string, playerTwoId: string, playerOneName: string, playerTwoName: string): GameState {
   const cards: Card[] = [
     card(`${playerOneId}-main-1`, "mock-char-b", playerOneId, "MAIN_DECK", 0, false), card(`${playerOneId}-main-2`, "mock-relic-b", playerOneId, "MAIN_DECK", 1, false),
     card(`${playerOneId}-hand-char`, "mock-char-a", playerOneId, "HAND", 0), card(`${playerOneId}-hand-relic`, "mock-relic-a", playerOneId, "HAND", 1), card(`${playerOneId}-hand-verse`, "mock-verse-a", playerOneId, "HAND", 2),

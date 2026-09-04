@@ -162,6 +162,14 @@ export function RoomBoard({
   const run = async (action: GameAction): Promise<boolean> => {
     if (view.status !== "IN_GAME") return false;
     setError("");
+    if (view.game && action.type === "TAP_CARD" && view.game.phase === "ALBA") {
+      setError("No se puede tapear durante Alba.");
+      return false;
+    }
+    if (view.game && (action.type === "PLAY_CHARACTER" || action.type === "PLAY_CHARACTER_ATTACH_RELIC" || action.type === "PLAY_RELIC") && view.game.phase !== "MEDIODIA") {
+      setError("Personajes y Reliquias solo pueden jugarse durante Mediodia.");
+      return false;
+    }
     if (action.type === "SET_PHASE" && view.game) {
       const blockers = getPhaseBlockers(view.game, me, action.phase);
       if (blockers.length > 0) {
@@ -196,7 +204,8 @@ export function RoomBoard({
   ) => {
     event.preventDefault();
     event.stopPropagation();
-    setMenu({ x: event.clientX, y: event.clientY, actions, card, placement });
+    const visibleActions = view.game?.phase === "ALBA" ? actions.filter((action) => action !== "TAP") : actions;
+    setMenu({ x: event.clientX, y: event.clientY, actions: visibleActions, card, placement });
   };
   const closeMenu = () => setMenu(null);
   const performContextAction = (action: RoomContextAction) => {
@@ -443,7 +452,7 @@ export function RoomBoard({
             <HandZone
               cards={hand}
               onInspect={inspect}
-              onPlay={(card) => playable(card, me, run)}
+              onPlay={(card) => playable(card, me, run, view.game?.phase ?? "ALBA")}
               onContextMenu={openMenu}
             />
           </section>
@@ -991,6 +1000,7 @@ function playable(
   card: ViewCard,
   playerId: string,
   run: (action: GameAction) => Promise<boolean>,
+  phase: GamePhase,
 ) {
   if (
     card.zone !== "HAND" ||
@@ -998,7 +1008,7 @@ function playable(
     !card.definition
   )
     return;
-  if (card.definition.type === "CHARACTER")
+  if (card.definition.type === "CHARACTER" && phase === "MEDIODIA")
     void run({ type: "PLAY_CHARACTER", instanceId: card.instanceId, playerId });
   if (card.definition.type === "VERSE")
     void run({ type: "PLAY_VERSE", instanceId: card.instanceId, playerId });
@@ -1175,6 +1185,7 @@ function BoardSide({
       virtualEssenceCount={virtualEssenceCount}
       virtualEssencePending={virtualEssencePending}
       onEditVirtualEssence={onEditVirtualEssence}
+      onUntapAllEssences={!opponent && essences.some((card) => card.tapped) ? () => onAction?.({ type: "UNTAP_ALL_ESSENCES", playerId }) : undefined}
     />
   );
   const hiddenFieldCards = field.filter((card) => card.hidden);
@@ -1802,6 +1813,7 @@ function EssenceField({
   virtualEssenceCount,
   virtualEssencePending,
   onEditVirtualEssence,
+  onUntapAllEssences,
 }: {
   cards: ViewCard[];
   opponent: boolean;
@@ -1815,6 +1827,7 @@ function EssenceField({
   virtualEssenceCount: number;
   virtualEssencePending: boolean;
   onEditVirtualEssence?: () => void;
+  onUntapAllEssences?: () => void;
 }) {
   const sizeClass = "h-[104px] min-h-[104px]";
   return (
@@ -1833,6 +1846,16 @@ function EssenceField({
       >
         VE {virtualEssenceCount}{virtualEssencePending ? " *" : ""}
       </button>
+      {onUntapAllEssences && (
+        <button
+          type="button"
+          className="absolute left-2 top-1 z-20 border border-emerald-200/40 px-1.5 py-0.5 text-[8px] uppercase tracking-wider text-emerald-100 hover:border-emerald-100"
+          onClick={onUntapAllEssences}
+          aria-label="Enderezar todas las Esencias"
+        >
+          Enderezar Esencias
+        </button>
+      )}
       {cards.length > 0 && (
         <div
           data-testid="essence-zone-content"
