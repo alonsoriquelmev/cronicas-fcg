@@ -132,6 +132,7 @@ export function RoomBoard({
   const [deckLookCount, setDeckLookCount] = useState<number | null>(null);
   const [restoreCardId, setRestoreCardId] = useState<string | null>(null);
   const [virtualEssenceEditor, setVirtualEssenceEditor] = useState(false);
+  const [sanctuaryBackground, setSanctuaryBackground] = useState(false);
   const [finishIntent, setFinishIntent] = useState<FinishIntent | null>(null);
   const previousActivePlayerRef = useRef<string | null>(view.game?.activePlayerId ?? null);
   const turnPopupTimeoutRef = useRef<number | null>(null);
@@ -269,6 +270,8 @@ export function RoomBoard({
       void run({ type: "DEVASTATE_CARD", instanceId: menu.card.instanceId, playerId: me });
     if (action === "REVERT_DEVASTATION" && menu?.card)
       setRestoreCardId(menu.card.instanceId);
+    if (action === "SET_SANCTUARY_BACKGROUND") setSanctuaryBackground(true);
+    if (action === "REMOVE_SANCTUARY_BACKGROUND") setSanctuaryBackground(false);
     closeMenu();
   };
   const confirmFinish = async () => {
@@ -477,6 +480,7 @@ export function RoomBoard({
               onAction={undefined}
               onInspect={inspect}
               onContextMenu={openMenu}
+              sanctuaryBackground={false}
             />
             <TurnPanel game={view.game} playerId={me} onAction={run} />
             <ResourcePanel
@@ -490,6 +494,7 @@ export function RoomBoard({
               onAction={run}
               onInspect={inspect}
               onContextMenu={openMenu}
+              sanctuaryBackground={sanctuaryBackground}
             />
           </aside>
         </div>
@@ -855,6 +860,7 @@ function ResourcePanel({
   onAction,
   onInspect,
   onContextMenu,
+  sanctuaryBackground,
 }: {
   testId: string;
   label: string;
@@ -872,6 +878,7 @@ function ResourcePanel({
     card?: ViewCard,
     placement?: ContextMenuPlacement,
   ) => void;
+  sanctuaryBackground: boolean;
 }) {
   void cards;
   const mainCount = publicCount(hiddenCounts, playerId, "MAIN_DECK");
@@ -892,6 +899,7 @@ function ResourcePanel({
         opponent={Boolean(opponent)}
         playerId={playerId}
         sanctuaryHp={sanctuaryHp}
+        sanctuaryBackground={sanctuaryBackground}
         onAction={onAction}
         onInspect={onInspect}
         onContextMenu={onContextMenu}
@@ -1891,11 +1899,13 @@ function SanctuarySlot({
   onAction,
   onInspect,
   onContextMenu,
+  sanctuaryBackground,
 }: {
   sanctuary?: ViewCard;
   opponent: boolean;
   playerId: string;
   sanctuaryHp: number;
+  sanctuaryBackground: boolean;
   onAction?: (action: GameAction) => void;
   onInspect: (card: ViewCard) => void;
   onContextMenu: (
@@ -1907,10 +1917,23 @@ function SanctuarySlot({
   const hpButtonClass =
     "h-8 w-8 shrink-0 border border-amber-200/30 bg-amber-950/30 text-base leading-none text-amber-100 transition hover:border-amber-100/70";
   const hpSpacer = <span aria-hidden="true" className="h-8 w-8 shrink-0" />;
+  const sanctuaryContextMenu = (event: React.MouseEvent) => {
+    if (!sanctuary) return;
+    const actions = getPublicCardContextActions(sanctuary, !opponent);
+    if (!opponent) {
+      actions.push(
+        sanctuaryBackground
+          ? "REMOVE_SANCTUARY_BACKGROUND"
+          : "SET_SANCTUARY_BACKGROUND",
+      );
+    }
+    onContextMenu(event, actions, sanctuary);
+  };
   return (
     <div
       data-testid="resource-sanctuary"
-      className="flex h-[174px] flex-col items-center gap-0.5 overflow-hidden border border-amber-200/10 bg-amber-950/[0.08] p-1"
+      className={`relative flex h-[174px] flex-col items-center gap-0.5 overflow-hidden border border-amber-200/10 bg-amber-950/[0.08] p-1 ${sanctuaryBackground ? "bg-cover bg-center" : ""}`}
+      style={sanctuaryBackground ? { backgroundImage: "linear-gradient(rgba(9, 8, 7, 0.58), rgba(9, 8, 7, 0.58)), url('/assets/sanctuary-background.png')" } : undefined}
     >
       <ZoneLabel>Sanctuary</ZoneLabel>
       {sanctuary && (
@@ -1938,7 +1961,7 @@ function SanctuarySlot({
               card={sanctuary}
               size="sanctuary"
               onInspect={onInspect}
-              onContextMenu={onContextMenu}
+              onContextMenu={sanctuaryContextMenu}
             />
             {opponent ? (
               hpSpacer
@@ -2710,6 +2733,8 @@ function ContextMenu({
     SEARCH_MAIN_DECK: "Buscar en el Mazo",
     DEVASTATE: "Devastar",
     REVERT_DEVASTATION: "Revertir devastacion",
+    SET_SANCTUARY_BACKGROUND: "Poner fondo",
+    REMOVE_SANCTUARY_BACKGROUND: "Quitar fondo",
   };
   return (
     <div

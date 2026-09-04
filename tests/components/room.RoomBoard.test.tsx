@@ -310,6 +310,27 @@ describe("RoomBoard terminal confirmations", () => {
     expect(within(own).getByText("PV 22").parentElement?.className).toContain("h-6");
   });
 
+  it("allows only the own Sanctuary to toggle its local background", async () => {
+    const user = userEvent.setup();
+    render(<RoomBoard view={boardView()} sessionToken="session" />);
+
+    fireEvent.contextMenu(
+      within(screen.getByTestId("resource-panel-rival")).getByTestId("game-card-opponent-sanctuary"),
+    );
+    expect(screen.queryByRole("button", { name: "Poner fondo" })).toBeNull();
+
+    fireEvent.contextMenu(
+      within(screen.getByTestId("resource-panel-own")).getByTestId("game-card-local-sanctuary"),
+    );
+    await user.click(screen.getByRole("button", { name: "Poner fondo" }));
+
+    expect(within(screen.getByTestId("resource-panel-own")).getByTestId("resource-sanctuary").getAttribute("style")).toContain("sanctuary-background.png");
+    fireEvent.contextMenu(
+      within(screen.getByTestId("resource-panel-own")).getByTestId("game-card-local-sanctuary"),
+    );
+    expect(screen.getByRole("button", { name: "Quitar fondo" })).toBeTruthy();
+  });
+
   it("restores own Main and Essence deck context draws without enabling rival decks", async () => {
     const user = userEvent.setup();
     render(<RoomBoard view={boardView()} sessionToken="session" />);
