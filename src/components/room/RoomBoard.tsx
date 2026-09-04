@@ -1933,7 +1933,7 @@ function SanctuarySlot({
     <div
       data-testid="resource-sanctuary"
       className={`relative flex h-[174px] flex-col items-center gap-0.5 overflow-hidden border border-amber-200/10 bg-amber-950/[0.08] p-1 ${sanctuaryBackground ? "bg-cover bg-center" : ""}`}
-      style={sanctuaryBackground ? { backgroundImage: "linear-gradient(rgba(9, 8, 7, 0.58), rgba(9, 8, 7, 0.58)), url('/assets/sanctuary-background.png')" } : undefined}
+      style={sanctuaryBackground ? { backgroundImage: "linear-gradient(rgba(9, 8, 7, 0.28), rgba(9, 8, 7, 0.28)), url('/assets/sanctuary-background.png')" } : undefined}
     >
       <ZoneLabel>Sanctuary</ZoneLabel>
       {sanctuary && (
