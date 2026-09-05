@@ -27,9 +27,11 @@ export function getPublicCardContextActions(card: RoomViewCard, editable = false
   return actions;
 }
 
-export function getDeckContextActions(deck: "MAIN_DECK" | "ESSENCE_DECK", opponent: boolean): RoomContextAction[] {
+export function getDeckContextActions(deck: "MAIN_DECK" | "ESSENCE_DECK", opponent: boolean, allowMainDraw = true): RoomContextAction[] {
   if (opponent) return [];
-  return deck === "MAIN_DECK" ? ["DRAW_CARD", "LOOK_MAIN_DECK", "SEARCH_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"] : ["DRAW_ESSENCE"];
+  if (deck === "ESSENCE_DECK") return ["DRAW_ESSENCE"];
+  const actions: RoomContextAction[] = ["DRAW_CARD", "LOOK_MAIN_DECK", "SEARCH_MAIN_DECK", "SEND_TOP_TO_GRAVEYARD", "SHUFFLE_MAIN_DECK"];
+  return actions.filter((action) => allowMainDraw || action !== "DRAW_CARD");
 }
 
 export function getHandCardContextActions(card: RoomViewCard): RoomContextAction[] {

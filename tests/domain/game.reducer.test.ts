@@ -24,6 +24,17 @@ describe("applyGameAction", () => {
     const next = applyGameAction(state, { type: "MOVE_CARD", instanceId: "local-hand-char", toZone: "HAND", controllerId: MOCK_IDS.local });
     expect(next.cardInstances["local-hand-char"]).toMatchObject({ zone: "HAND", tapped: false });
   });
+  it("untaps cards whenever they leave the Field for Graveyard or Devastated", () => {
+    const graveyardState = buildMockGameState();
+    graveyardState.cardInstances["local-hand-char"] = { ...graveyardState.cardInstances["local-hand-char"], zone: "FIELD", tapped: true };
+    const graveyard = applyGameAction(graveyardState, { type: "MOVE_CARD", instanceId: "local-hand-char", toZone: "GRAVEYARD", controllerId: MOCK_IDS.local });
+    expect(graveyard.cardInstances["local-hand-char"]).toMatchObject({ zone: "GRAVEYARD", tapped: false });
+
+    const devastatedState = buildMockGameState();
+    devastatedState.cardInstances["local-hand-char"] = { ...devastatedState.cardInstances["local-hand-char"], zone: "FIELD", tapped: true };
+    const devastated = applyGameAction(devastatedState, { type: "DEVASTATE_CARD", instanceId: "local-hand-char", playerId: MOCK_IDS.local }, mockCardDefinitionsById);
+    expect(devastated.cardInstances["local-hand-char"]).toMatchObject({ zone: "DEVASTATED", tapped: false });
+  });
   it("clears manual ATQ/PV modifiers whenever a Character leaves the Field", () => {
     const makeModifiedFieldState = () => {
       const state = buildMockGameState();
@@ -167,6 +178,14 @@ describe("applyGameAction", () => {
     state = applyGameAction(state, { type: "APPROVE_VIRTUAL_ESSENCE_CHANGE", proposalId: "ve-1", playerId: MOCK_IDS.opponent, targetPlayerId: MOCK_IDS.local });
     expect(state.players[MOCK_IDS.local].virtualEssenceCount).toBe(2);
     expect(() => applyGameAction(state, { type: "REQUEST_VIRTUAL_ESSENCE_CHANGE", proposalId: "ve-2", playerId: MOCK_IDS.local, amount: -3 })).toThrow();
+  });
+
+  it("consumes virtual Essences immediately and never below zero", () => {
+    const state = buildMockGameState();
+    state.players[MOCK_IDS.local].virtualEssenceCount = 3;
+    const next = applyGameAction(state, { type: "CONSUME_VIRTUAL_ESSENCE", playerId: MOCK_IDS.local, amount: 2 });
+    expect(next.players[MOCK_IDS.local].virtualEssenceCount).toBe(1);
+    expect(() => applyGameAction(next, { type: "CONSUME_VIRTUAL_ESSENCE", playerId: MOCK_IDS.local, amount: 2 })).toThrow();
   });
 
   it("moves a card to the public Devastated zone and restores it without mutating its definition", () => {

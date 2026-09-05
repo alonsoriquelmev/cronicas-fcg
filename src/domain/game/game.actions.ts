@@ -32,6 +32,7 @@ export type GameAction =
   | { type: "FLIP_FACE_DOWN"; instanceId: string }
   | { type: "CHANGE_CARD_COUNTER"; instanceId: string; amount: number }
   | { type: "REQUEST_VIRTUAL_ESSENCE_CHANGE"; proposalId: string; playerId: PlayerId; amount: number }
+  | { type: "CONSUME_VIRTUAL_ESSENCE"; playerId: PlayerId; amount: number }
   | { type: "APPROVE_VIRTUAL_ESSENCE_CHANGE"; proposalId: string; playerId: PlayerId; targetPlayerId: PlayerId }
   | { type: "REJECT_VIRTUAL_ESSENCE_CHANGE"; proposalId: string; playerId: PlayerId; targetPlayerId: PlayerId }
   | { type: "PROPOSE_CHARACTER_STAT_CHANGE"; proposalId: string; characterInstanceId: string; playerId: PlayerId; attackDelta: number; healthDelta: number }

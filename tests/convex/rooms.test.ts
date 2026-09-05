@@ -66,6 +66,23 @@ describe("MISSION_002 multiplayer boundaries", () => {
     expect(() => assertAuthorizedAction(state, { type: "PLAY_CHARACTER", instanceId: "A-hand-char", playerId: "A" }, "A")).not.toThrow();
   });
 
+  it("blocks the starting player from drawing during the opening Amanecer", () => {
+    const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "AMANECER";
+    expect(() => assertAuthorizedAction(state, { type: "DRAW_CARD", playerId: "A" }, "A")).toThrow("primer Amanecer");
+    state.turnNumber = 2;
+    state.activePlayerId = "B";
+    expect(() => assertAuthorizedAction(state, { type: "DRAW_CARD", playerId: "B" }, "B")).not.toThrow();
+  });
+
+  it("authorizes only a valid own virtual Essence consumption", () => {
+    const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.players.A.virtualEssenceCount = 2;
+    expect(() => assertAuthorizedAction(state, { type: "CONSUME_VIRTUAL_ESSENCE", playerId: "A", amount: 1 }, "A")).not.toThrow();
+    expect(() => assertAuthorizedAction(state, { type: "CONSUME_VIRTUAL_ESSENCE", playerId: "A", amount: 3 }, "A")).toThrow();
+    expect(() => assertAuthorizedAction(state, { type: "CONSUME_VIRTUAL_ESSENCE", playerId: "B", amount: 1 }, "A")).toThrow();
+  });
+
   it("authorizes the atomic action to untap only the active player's Essences", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
     expect(() => assertAuthorizedAction(state, { type: "UNTAP_ALL_ESSENCES", playerId: "A" }, "A")).not.toThrow();

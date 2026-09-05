@@ -164,6 +164,9 @@ describe("RoomBoard terminal confirmations", () => {
 
     expect(screen.getByRole("dialog", { name: "Buscar cartas en el Mazo Principal" })).toBeTruthy();
     expect(screen.getAllByTestId(/^deck-search-card-/)).toHaveLength(2);
+    await user.click(within(screen.getByTestId("deck-search-card-local-main-1")).getByTestId("game-card-local-main-1"));
+    expect(screen.getByRole("dialog", { name: /Inspecci/ }).className).toContain("z-[80]");
+    await user.keyboard("{Escape}");
     await user.click(screen.getByRole("button", { name: "Seleccionar todo" }));
     expect(screen.getByText(/Seleccionadas: 2\./)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Mostrar al oponente" }));
@@ -361,6 +364,29 @@ describe("RoomBoard terminal confirmations", () => {
     expect(screen.queryByRole("button", { name: "Enviar top al Cementerio" })).toBeNull();
     fireEvent.contextMenu(within(rivalPanel).getByTestId("card-back-ESSENCE_DECK"));
     expect(screen.queryByRole("button", { name: "Robar" })).toBeNull();
+  });
+
+  it("hides the Main Deck draw during the starting player's opening Amanecer", () => {
+    const view = boardView();
+    view.game.phase = "AMANECER";
+    view.game.turnNumber = 1;
+    view.game.phaseProgress = { turnNumber: 1, playerId: "PLAYER_LOCAL", essenceDrawn: true, mainCardDrawn: false };
+    render(<RoomBoard view={view} sessionToken="session" />);
+    fireEvent.contextMenu(within(screen.getByTestId("resource-panel-own")).getByTestId("card-back-MAIN_DECK"));
+    expect(within(screen.getByTestId("context-menu")).queryByRole("button", { name: "Robar" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Mirar" })).toBeTruthy();
+  });
+
+  it("consumes virtual Essences from the own editor", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    view.game.players.PLAYER_LOCAL.virtualEssenceCount = 3;
+    render(<RoomBoard view={view} sessionToken="session" />);
+    await user.click(screen.getByRole("button", { name: "Modificar Esencias virtuales" }));
+    await user.clear(screen.getByLabelText("Cantidad a consumir"));
+    await user.type(screen.getByLabelText("Cantidad a consumir"), "2");
+    await user.click(screen.getByRole("button", { name: "Consumir" }));
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "CONSUME_VIRTUAL_ESSENCE", playerId: "PLAYER_LOCAL", amount: 2 } }));
   });
 
   it.each([

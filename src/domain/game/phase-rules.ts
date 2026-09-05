@@ -23,6 +23,10 @@ export function getPersonalTurnNumber(state: Pick<GameState, "startingPlayerId" 
     : Math.floor(state.turnNumber / 2);
 }
 
+export function isOpeningTurn(state: Pick<GameState, "startingPlayerId" | "turnNumber">, playerId: PlayerId) {
+  return state.turnNumber === 1 && state.startingPlayerId === playerId;
+}
+
 export function getCurrentTurnPhaseProgress(state: Pick<GameState, "activePlayerId" | "turnNumber"> & { phaseProgress?: TurnPhaseProgress | null }): TurnPhaseProgress {
   const progress = state.phaseProgress;
   if (progress?.turnNumber === state.turnNumber && progress.playerId === state.activePlayerId) return progress;
@@ -43,7 +47,7 @@ export function getPhaseBlockers(state: RuleState, playerId: PlayerId, targetPha
   }
 
   if (state.phase === "AMANECER" && targetPhase === "MEDIODIA") {
-    if (getPersonalTurnNumber(state, playerId) >= 2 && !progress.mainCardDrawn && deckCount(state, playerId, "MAIN_DECK") > 0) {
+    if (!isOpeningTurn(state, playerId) && !progress.mainCardDrawn && deckCount(state, playerId, "MAIN_DECK") > 0) {
       blockers.push("DRAW_MAIN_CARD");
     }
   }

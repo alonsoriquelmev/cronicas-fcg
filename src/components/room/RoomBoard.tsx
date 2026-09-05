@@ -16,7 +16,7 @@ import { api } from "@/../convex/_generated/api";
 import type { CardDefinition } from "@/domain/cards/card.types";
 import type { GameAction } from "@/domain/game/game.actions";
 import type { CardInstance, CharacterStatChangeProposal, DeckLookState, GamePhase, VirtualEssenceChangeProposal } from "@/domain/game/game.types";
-import { getPhaseBlockers, phaseBlockerLabels, phaseBlockersFromError } from "@/domain/game/phase-rules";
+import { getPhaseBlockers, isOpeningTurn, phaseBlockerLabels, phaseBlockersFromError } from "@/domain/game/phase-rules";
 import {
   CHARACTER_MARKER_KINDS,
   CHARACTER_MARKER_LABELS,
@@ -165,6 +165,10 @@ export function RoomBoard({
     setError("");
     if (view.game && action.type === "TAP_CARD" && view.game.phase === "ALBA") {
       setError("No se puede tapear durante Alba.");
+      return false;
+    }
+    if (view.game && action.type === "DRAW_CARD" && view.game.phase === "AMANECER" && isOpeningTurn(view.game, action.playerId)) {
+      setError("El jugador inicial no roba durante su primer Amanecer.");
       return false;
     }
     if (view.game && (action.type === "PLAY_CHARACTER" || action.type === "PLAY_CHARACTER_ATTACH_RELIC" || action.type === "PLAY_RELIC") && view.game.phase !== "MEDIODIA") {
@@ -495,6 +499,7 @@ export function RoomBoard({
               onInspect={inspect}
               onContextMenu={openMenu}
               sanctuaryBackground={sanctuaryBackground}
+              allowMainDraw={!isOpeningTurn(view.game, me) || view.game.phase !== "AMANECER"}
             />
           </aside>
         </div>
@@ -615,6 +620,10 @@ export function RoomBoard({
             onClose={() => setVirtualEssenceEditor(false)}
             onSubmit={(amount) => {
               void run({ type: "REQUEST_VIRTUAL_ESSENCE_CHANGE", proposalId: crypto.randomUUID(), playerId: me, amount });
+              setVirtualEssenceEditor(false);
+            }}
+            onConsume={(amount) => {
+              void run({ type: "CONSUME_VIRTUAL_ESSENCE", playerId: me, amount });
               setVirtualEssenceEditor(false);
             }}
           />
@@ -861,6 +870,7 @@ function ResourcePanel({
   onInspect,
   onContextMenu,
   sanctuaryBackground,
+  allowMainDraw = true,
 }: {
   testId: string;
   label: string;
@@ -879,6 +889,7 @@ function ResourcePanel({
     placement?: ContextMenuPlacement,
   ) => void;
   sanctuaryBackground: boolean;
+  allowMainDraw?: boolean;
 }) {
   void cards;
   const mainCount = publicCount(hiddenCounts, playerId, "MAIN_DECK");
@@ -914,7 +925,7 @@ function ResourcePanel({
           onContextMenu={(event) =>
             onContextMenu(
               event,
-              getDeckContextActions("MAIN_DECK", Boolean(opponent)),
+              getDeckContextActions("MAIN_DECK", Boolean(opponent), allowMainDraw),
               undefined,
               "above",
             )
@@ -2680,11 +2691,30 @@ function DeckSearchRevealDialog({ cards, playerName, onInspect }: { cards: ViewC
   );
 }
 
-function VirtualEssenceEditor({ current, pending, onClose, onSubmit }: { current: number; pending: boolean; onClose: () => void; onSubmit: (amount: number) => void }) {
+function VirtualEssenceEditor({ current, pending, onClose, onSubmit, onConsume }: { current: number; pending: boolean; onClose: () => void; onSubmit: (amount: number) => void; onConsume: (amount: number) => void }) {
   const [amount, setAmount] = useState(1);
+  const [consumeAmount, setConsumeAmount] = useState(1);
+  const canConsume = !pending && consumeAmount >= 1 && consumeAmount <= current;
   return (
     <div role="dialog" aria-modal="true" aria-label="Modificar Esencias virtuales" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4">
-      <section className="w-full max-w-sm border border-emerald-300/30 bg-[#171311] p-5"><h2 className="text-sm uppercase tracking-[0.2em] text-emerald-100">Esencias virtuales</h2><p className="mt-2 text-sm text-zinc-400">Actuales: {current}. El rival debe aprobar cualquier cambio.</p>{pending ? <p className="mt-4 text-sm text-amber-100">Ya hay una solicitud pendiente.</p> : <><label className="mt-4 block text-xs text-zinc-300" htmlFor="virtual-essence-change">Cambio</label><input id="virtual-essence-change" type="number" value={amount} onChange={(event) => setAmount(Number(event.target.value) || 0)} className="mt-1 w-full border border-white/15 bg-black/30 px-3 py-2" /><p className="mt-2 text-xs text-zinc-500">Resultado: {Math.max(0, current + amount)}</p><div className="mt-5 flex justify-end gap-2"><button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={onClose}>Cancelar</button><button type="button" disabled={!amount || current + amount < 0} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40" onClick={() => onSubmit(amount)}>Solicitar aprobacion</button></div></>}</section>
+      <section className="w-full max-w-sm border border-emerald-300/30 bg-[#171311] p-5">
+        <h2 className="text-sm uppercase tracking-[0.2em] text-emerald-100">Esencias virtuales</h2>
+        <p className="mt-2 text-sm text-zinc-400">Actuales: {current}. El rival debe aprobar cualquier cambio.</p>
+        <div className="mt-4 border-b border-white/10 pb-4">
+          <label className="block text-xs text-zinc-300" htmlFor="virtual-essence-consume">Cantidad a consumir</label>
+          <div className="mt-1 flex gap-2">
+            <input id="virtual-essence-consume" type="number" min={1} max={current} value={consumeAmount} onChange={(event) => setConsumeAmount(Number(event.target.value) || 0)} className="min-w-0 flex-1 border border-white/15 bg-black/30 px-3 py-2" />
+            <button type="button" disabled={!canConsume} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40" onClick={() => onConsume(consumeAmount)}>Consumir</button>
+          </div>
+          {pending && <p className="mt-2 text-xs text-amber-100">No se puede consumir mientras hay una solicitud pendiente.</p>}
+        </div>
+        {pending ? <p className="mt-4 text-sm text-amber-100">Ya hay una solicitud pendiente.</p> : <>
+          <label className="mt-4 block text-xs text-zinc-300" htmlFor="virtual-essence-change">Cambio</label>
+          <input id="virtual-essence-change" type="number" value={amount} onChange={(event) => setAmount(Number(event.target.value) || 0)} className="mt-1 w-full border border-white/15 bg-black/30 px-3 py-2" />
+          <p className="mt-2 text-xs text-zinc-500">Resultado: {Math.max(0, current + amount)}</p>
+          <div className="mt-5 flex justify-end gap-2"><button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={onClose}>Cancelar</button><button type="button" disabled={!amount || current + amount < 0} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40" onClick={() => onSubmit(amount)}>Solicitar aprobacion</button></div>
+        </>}
+      </section>
     </div>
   );
 }

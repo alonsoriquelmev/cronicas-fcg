@@ -2,10 +2,10 @@ import type { GameAction } from "../src/domain/game/game.actions";
 import type { CardDefinition } from "../src/domain/cards/card.types";
 import { definitions } from "./gameSeed";
 import { isCharacterMarkerKind } from "../src/domain/game/character-markers";
-import { getPhaseBlockers, phaseBlockerError } from "../src/domain/game/phase-rules";
+import { getPhaseBlockers, isOpeningTurn, phaseBlockerError } from "../src/domain/game/phase-rules";
 
-const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "UNTAP_ALL_ESSENCES", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
-const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "UNTAP_ALL_ESSENCES", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
+const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "UNTAP_ALL_ESSENCES", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
+const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "UNTAP_ALL_ESSENCES", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
 
 type AuthorityState = {
   cardInstances: Record<string, { ownerId: string; controllerId: string; zone: string; cardDefinitionId: string; attachedToInstanceId: string | null; tapped: boolean; manualAttackModifier?: number; manualHealthModifier?: number }>;
@@ -52,6 +52,7 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
   const deckLookAction = input.type === "LOOK_AT_MAIN_DECK" || input.type === "SEARCH_MAIN_DECK" || input.type === "REORDER_DECK_LOOK" || input.type === "RESOLVE_DECK_LOOK" || input.type === "SET_DECK_SEARCH_REVEALED" || input.type === "RESOLVE_DECK_SEARCH" || input.type === "CLOSE_DECK_SEARCH";
   const deckActionsBlockedByLook = input.type === "DRAW_CARD" || input.type === "SEARCH_MAIN_DECK" || input.type === "SHUFFLE_MAIN_DECK" || input.type === "SEND_MAIN_DECK_TOP_TO_GRAVEYARD" || input.type === "SHUFFLE_CARD_INTO_MAIN_DECK";
   if (deckActionsBlockedByLook && state.deckLooks?.[actorId]) throw new Error("Resolve the active deck look first");
+  if (input.type === "DRAW_CARD" && state.phase === "AMANECER" && isOpeningTurn(state, actorId)) throw new Error("El jugador inicial no roba durante su primer Amanecer");
   if (deckLookAction && input.playerId !== actorId) throw new Error("Deck look targets another seat");
   if (input.type === "LOOK_AT_MAIN_DECK") {
     const count = Number(input.count);
@@ -140,6 +141,11 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
   if (input.type === "REQUEST_VIRTUAL_ESSENCE_CHANGE") {
     const player = state.players[actorId];
     if (!player || state.pendingVirtualEssenceChanges?.[actorId] || typeof input.proposalId !== "string" || input.proposalId.length < 1 || !Number.isInteger(input.amount) || input.amount === 0 || (player.virtualEssenceCount ?? 0) + Number(input.amount) < 0) throw new Error("Invalid virtual Essence proposal");
+  }
+  if (input.type === "CONSUME_VIRTUAL_ESSENCE") {
+    const player = state.players[actorId];
+    const amount = Number(input.amount);
+    if (!player || state.pendingVirtualEssenceChanges?.[actorId] || !Number.isInteger(amount) || amount < 1 || (player.virtualEssenceCount ?? 0) < amount) throw new Error("Invalid virtual Essence consumption");
   }
   const virtualEssenceApproval = input.type === "APPROVE_VIRTUAL_ESSENCE_CHANGE" || input.type === "REJECT_VIRTUAL_ESSENCE_CHANGE";
   if (virtualEssenceApproval) {

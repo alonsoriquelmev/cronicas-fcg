@@ -44,6 +44,14 @@ describe("MISSION_003 manual turn phases", () => {
     expect(getPhaseBlockers(ready, MOCK_IDS.local, "MEDIODIA")).toEqual([]);
   });
 
+  it("skips the opening Main Deck draw only for the starting player", () => {
+    const opening = { ...buildMockGameState(), phase: "AMANECER" as const, phaseProgress: { turnNumber: 1, playerId: MOCK_IDS.local, essenceDrawn: true, mainCardDrawn: false } };
+    expect(getPhaseBlockers(opening, MOCK_IDS.local, "MEDIODIA")).toEqual([]);
+
+    const secondPlayer = { ...opening, activePlayerId: MOCK_IDS.opponent, turnNumber: 2, phaseProgress: { turnNumber: 2, playerId: MOCK_IDS.opponent, essenceDrawn: true, mainCardDrawn: false } };
+    expect(getPhaseBlockers(secondPlayer, MOCK_IDS.opponent, "MEDIODIA")).toEqual(["DRAW_MAIN_CARD"]);
+  });
+
   it("keeps preparation actions outside the gameplay mutation boundary", () => {
     expect(() => assertRoomInGame("MULLIGAN")).toThrow("Room is not in game");
     expect(() => assertRoomInGame("FINISHED")).toThrow("Room is not in game");

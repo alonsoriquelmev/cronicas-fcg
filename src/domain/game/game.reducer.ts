@@ -2,7 +2,7 @@ import type { CardDefinition } from "../cards/card.types";
 import type { GameAction } from "./game.actions";
 import type { CardInstance, GameState } from "./game.types";
 import { isCharacterMarkerKind } from "./character-markers";
-import { getCurrentTurnPhaseProgress } from "./phase-rules";
+import { getCurrentTurnPhaseProgress, isOpeningTurn } from "./phase-rules";
 
 const copy = (state: GameState): GameState => ({
   ...state,
@@ -27,7 +27,7 @@ function move(state: GameState, instanceId: string, zone: CardInstance["zone"], 
   const card = requireCard(state, instanceId);
   const nextController = controllerId ?? card.controllerId;
   const orderedByController = zone === "VERSE_RESOLUTION" ? undefined : nextController;
-  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), tapped: zone === "HAND" ? false : card.tapped, faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null, manualAttackModifier: zone === "FIELD" ? card.manualAttackModifier : 0, manualHealthModifier: zone === "FIELD" ? card.manualHealthModifier : 0 };
+  state.cardInstances[instanceId] = { ...card, zone, controllerId: nextController, zoneOrder: nextOrder(state, zone, orderedByController), tapped: zone === "FIELD" || zone === "ESSENCE_ZONE" ? card.tapped : false, faceUp: zone !== "MAIN_DECK" && zone !== "ESSENCE_DECK", attachedToInstanceId: zone === "FIELD" ? (attachedToInstanceId === undefined ? card.attachedToInstanceId : attachedToInstanceId) : null, manualAttackModifier: zone === "FIELD" ? card.manualAttackModifier : 0, manualHealthModifier: zone === "FIELD" ? card.manualHealthModifier : 0 };
   if (zone !== "FIELD" && state.pendingStatChanges?.[instanceId]) delete state.pendingStatChanges[instanceId];
   if (zone !== "FIELD" && state.characterMarkers?.[instanceId]) delete state.characterMarkers[instanceId];
   if (zone !== "FIELD" && card.zone === "FIELD") {
@@ -88,6 +88,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
   switch (action.type) {
     case "DRAW_CARD": {
       assertNoDeckLook(next, action.playerId);
+      if (next.phase === "AMANECER" && isOpeningTurn(next, action.playerId)) throw new Error("El jugador inicial no roba durante su primer Amanecer");
       const card = cards(next, "MAIN_DECK", action.playerId)[0];
       if (card) {
         move(next, card.instanceId, "HAND", action.playerId);
@@ -231,6 +232,13 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       next.pendingVirtualEssenceChanges![action.playerId] = { proposalId: action.proposalId, playerId: action.playerId, amount: action.amount };
       break;
     }
+    case "CONSUME_VIRTUAL_ESSENCE": {
+      if (!Number.isInteger(action.amount) || action.amount < 1) throw new Error("La cantidad de Esencias Virtuales a consumir no es valida");
+      const player = next.players[action.playerId];
+      if (!player || next.pendingVirtualEssenceChanges?.[action.playerId] || (player.virtualEssenceCount ?? 0) < action.amount) throw new Error("No hay suficientes Esencias Virtuales para consumir");
+      next.players[action.playerId] = { ...player, virtualEssenceCount: (player.virtualEssenceCount ?? 0) - action.amount };
+      break;
+    }
     case "APPROVE_VIRTUAL_ESSENCE_CHANGE": {
       const proposal = next.pendingVirtualEssenceChanges?.[action.targetPlayerId];
       const player = next.players[action.targetPlayerId];
@@ -268,7 +276,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
     case "DEVASTATE_CARD": {
       const card = requireCard(next, action.instanceId);
       if (card.zone !== "FIELD" && card.zone !== "GRAVEYARD") throw new Error("Solo se pueden devastar cartas del Campo o Cementerio");
-      next.cardInstances[card.instanceId] = { ...card, zone: "DEVASTATED", zoneOrder: nextOrder(next, "DEVASTATED", card.controllerId), faceUp: true, attachedToInstanceId: null, manualAttackModifier: 0, manualHealthModifier: 0, devastatedFromZone: card.zone, devastatedFromAttachedToInstanceId: card.attachedToInstanceId };
+      next.cardInstances[card.instanceId] = { ...card, zone: "DEVASTATED", zoneOrder: nextOrder(next, "DEVASTATED", card.controllerId), tapped: false, faceUp: true, attachedToInstanceId: null, manualAttackModifier: 0, manualHealthModifier: 0, devastatedFromZone: card.zone, devastatedFromAttachedToInstanceId: card.attachedToInstanceId };
       if (card.zone === "FIELD") {
         for (const relic of Object.values(next.cardInstances)) if (relic.attachedToInstanceId === card.instanceId) next.cardInstances[relic.instanceId] = { ...relic, attachedToInstanceId: null };
       }
@@ -289,7 +297,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       const restoredAttachment = action.toZone === "FIELD" && card.devastatedFromAttachedToInstanceId && next.cardInstances[card.devastatedFromAttachedToInstanceId]?.zone === "FIELD"
         ? card.devastatedFromAttachedToInstanceId
         : null;
-      next.cardInstances[card.instanceId] = { ...rest, zone: action.toZone, zoneOrder: nextOrder(next, action.toZone, card.controllerId), faceUp: true, attachedToInstanceId: restoredAttachment };
+      next.cardInstances[card.instanceId] = { ...rest, zone: action.toZone, zoneOrder: nextOrder(next, action.toZone, card.controllerId), tapped: false, faceUp: true, attachedToInstanceId: restoredAttachment };
       break;
     }
     case "ADD_CHARACTER_MARKER": {
