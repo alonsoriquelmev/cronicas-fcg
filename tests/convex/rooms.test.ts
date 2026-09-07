@@ -11,6 +11,7 @@ import type { CardInstance, GameState } from "@/domain/game/game.types";
 describe("MISSION_002 multiplayer boundaries", () => {
   it("allows an owner action and rejects an opponent card", () => {
     const state = buildMockGameState();
+    state.phase = "MEDIODIA";
     expect(() => assertAuthorizedAction(state, { type: "DRAW_CARD", playerId: MOCK_IDS.local }, MOCK_IDS.local)).not.toThrow();
     expect(() => assertAuthorizedAction(state, { type: "TAP_CARD", instanceId: "opponent-field-char" }, MOCK_IDS.local)).toThrow();
   });
@@ -73,6 +74,12 @@ describe("MISSION_002 multiplayer boundaries", () => {
     state.turnNumber = 2;
     state.activePlayerId = "B";
     expect(() => assertAuthorizedAction(state, { type: "DRAW_CARD", playerId: "B" }, "B")).not.toThrow();
+  });
+
+  it("rejects Main Deck draws during Alba while allowing Essence draws", () => {
+    const state = createInitialState("room-test", "A", "B", "A", "B");
+    expect(() => assertAuthorizedAction(state, { type: "DRAW_CARD", playerId: "A" }, "A")).toThrow("ALBA");
+    expect(() => assertAuthorizedAction(state, { type: "DRAW_ESSENCE", playerId: "A" }, "A")).not.toThrow();
   });
 
   it("authorizes only a valid own virtual Essence consumption", () => {
@@ -167,6 +174,7 @@ describe("MISSION_002 multiplayer boundaries", () => {
 
   it("publishes authorized deck counts for both players and reduces them after drawing", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
+    state.phase = "MEDIODIA";
     const own = playerView(state, "A");
     expect(own.hiddenCounts.A.MAIN_DECK).toBe(2);
     expect(own.hiddenCounts.A.ESSENCE_DECK).toBe(2);

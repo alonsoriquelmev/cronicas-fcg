@@ -44,6 +44,17 @@ describe("MISSION_003 manual turn phases", () => {
     expect(getPhaseBlockers(ready, MOCK_IDS.local, "MEDIODIA")).toEqual([]);
   });
 
+  it("moves the active player to Mediodia after drawing during Amanecer", () => {
+    const state = { ...buildMockGameState(), phase: "AMANECER" as const, turnNumber: 2, activePlayerId: MOCK_IDS.opponent, phaseProgress: { turnNumber: 2, playerId: MOCK_IDS.opponent, essenceDrawn: true, mainCardDrawn: false } };
+    const next = applyGameAction(state, { type: "DRAW_CARD", playerId: MOCK_IDS.opponent });
+    expect(next.phase).toBe("MEDIODIA");
+    expect(next.phaseProgress?.mainCardDrawn).toBe(true);
+  });
+
+  it("does not allow the Main Deck to be robbed during Alba", () => {
+    expect(() => applyGameAction({ ...buildMockGameState(), phase: "ALBA" as const }, { type: "DRAW_CARD", playerId: MOCK_IDS.local })).toThrow("ALBA");
+  });
+
   it("skips the opening Main Deck draw only for the starting player", () => {
     const opening = { ...buildMockGameState(), phase: "AMANECER" as const, phaseProgress: { turnNumber: 1, playerId: MOCK_IDS.local, essenceDrawn: true, mainCardDrawn: false } };
     expect(getPhaseBlockers(opening, MOCK_IDS.local, "MEDIODIA")).toEqual([]);

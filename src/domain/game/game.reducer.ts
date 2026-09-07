@@ -88,11 +88,15 @@ export function applyGameAction(state: GameState, action: GameAction, definition
   switch (action.type) {
     case "DRAW_CARD": {
       assertNoDeckLook(next, action.playerId);
+      if (next.phase === "ALBA") throw new Error("No se puede robar del Mazo Principal durante ALBA");
       if (next.phase === "AMANECER" && isOpeningTurn(next, action.playerId)) throw new Error("El jugador inicial no roba durante su primer Amanecer");
       const card = cards(next, "MAIN_DECK", action.playerId)[0];
       if (card) {
         move(next, card.instanceId, "HAND", action.playerId);
-        if (next.activePlayerId === action.playerId && next.phase === "AMANECER") next.phaseProgress = { ...getCurrentTurnPhaseProgress(next), mainCardDrawn: true };
+        if (next.activePlayerId === action.playerId && next.phase === "AMANECER") {
+          next.phaseProgress = { ...getCurrentTurnPhaseProgress(next), mainCardDrawn: true };
+          next.phase = "MEDIODIA";
+        }
       }
       break;
     }
@@ -220,7 +224,7 @@ export function applyGameAction(state: GameState, action: GameAction, definition
     case "DETACH_RELIC": { const relic = requireCard(next, action.relicInstanceId); next.cardInstances[relic.instanceId] = { ...relic, attachedToInstanceId: null }; break; }
     case "TAP_CARD": { if (next.phase === "ALBA") throw new Error("No se puede tapear durante ALBA"); const card = requireCard(next, action.instanceId); next.cardInstances[card.instanceId] = { ...card, tapped: true }; break; }
     case "UNTAP_CARD": { const card = requireCard(next, action.instanceId); next.cardInstances[card.instanceId] = { ...card, tapped: false }; break; }
-    case "UNTAP_ALL_ESSENCES": Object.values(next.cardInstances).forEach((card) => { if (card.controllerId === action.playerId && card.zone === "ESSENCE_ZONE" && card.tapped) next.cardInstances[card.instanceId] = { ...card, tapped: false }; }); break;
+    case "UNTAP_ALL_ESSENCES": Object.values(next.cardInstances).forEach((card) => { const isEssence = card.zone === "ESSENCE_ZONE"; const isCharacter = card.zone === "FIELD" && definitions?.[card.cardDefinitionId]?.type === "CHARACTER"; if (card.controllerId === action.playerId && (isEssence || isCharacter) && card.tapped) next.cardInstances[card.instanceId] = { ...card, tapped: false }; }); break;
     case "FLIP_FACE_UP": { const card = requireCard(next, action.instanceId); next.cardInstances[card.instanceId] = { ...card, faceUp: true }; break; }
     case "FLIP_FACE_DOWN": { const card = requireCard(next, action.instanceId); next.cardInstances[card.instanceId] = { ...card, faceUp: false }; break; }
     case "CHANGE_CARD_COUNTER": { const card = requireCard(next, action.instanceId); next.cardInstances[card.instanceId] = { ...card, counter: card.counter + action.amount }; break; }

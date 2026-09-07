@@ -10,7 +10,7 @@ export const CARD_SIZE_CLASSES = {
   verse: "h-[5.557rem]",
   sanctuary: "h-[7.64rem]",
   md: "h-[10.42rem]",
-  lg: "h-[22.228rem]",
+  lg: "h-[min(72vh,32rem)]",
   back: "h-[6.25rem]",
 } as const;
 

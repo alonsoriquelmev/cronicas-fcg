@@ -17,7 +17,7 @@ describe("applyGameAction", () => {
   it("rejects a Relic played from Hand without an attachment", () => {
     expect(() => applyGameAction(buildMockGameState(), { type: "PLAY_RELIC", instanceId: "local-hand-relic", playerId: MOCK_IDS.local, attachedToInstanceId: null }, mockCardDefinitionsById)).toThrow();
   });
-  it("draws the first ordered main deck card", () => { const next = applyGameAction(buildMockGameState(), { type: "DRAW_CARD", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-main-1"].zone).toBe("HAND"); expect(getCardsInZone(next, "MAIN_DECK", MOCK_IDS.local)).toHaveLength(1); });
+  it("draws the first ordered main deck card", () => { const state = buildMockGameState(); state.phase = "MEDIODIA"; const next = applyGameAction(state, { type: "DRAW_CARD", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-main-1"].zone).toBe("HAND"); expect(getCardsInZone(next, "MAIN_DECK", MOCK_IDS.local)).toHaveLength(1); });
   it("untaps a card whenever it returns to hand", () => {
     const state = buildMockGameState();
     state.cardInstances["local-hand-char"] = { ...state.cardInstances["local-hand-char"], zone: "FIELD", tapped: true };
@@ -60,6 +60,16 @@ describe("applyGameAction", () => {
     expect(next.cardInstances["local-essence-1"].tapped).toBe(false);
     expect(next.cardInstances["local-essence-2"].tapped).toBe(false);
     expect(next.cardInstances["opponent-essence-1"].tapped).toBe(true);
+  });
+  it("also untaps the local player's Characters with the mass untap action", () => {
+    const state = buildMockGameState();
+    state.cardInstances["local-hand-char"] = { ...state.cardInstances["local-hand-char"], zone: "FIELD", tapped: true };
+    state.cardInstances["local-hand-relic"] = { ...state.cardInstances["local-hand-relic"], zone: "FIELD", tapped: true };
+    state.cardInstances["opponent-field-char"] = { ...state.cardInstances["opponent-field-char"], tapped: true };
+    const next = applyGameAction(state, { type: "UNTAP_ALL_ESSENCES", playerId: MOCK_IDS.local }, mockCardDefinitionsById);
+    expect(next.cardInstances["local-hand-char"].tapped).toBe(false);
+    expect(next.cardInstances["local-hand-relic"].tapped).toBe(true);
+    expect(next.cardInstances["opponent-field-char"].tapped).toBe(true);
   });
   it("plays a character and attaches a relic during Mediodia", () => { const state = buildMockGameState(); state.phase = "MEDIODIA"; let next = applyGameAction(state, { type: "PLAY_CHARACTER", instanceId: "local-hand-char", playerId: MOCK_IDS.local }, mockCardDefinitionsById); next = applyGameAction(next, { type: "PLAY_RELIC", instanceId: "local-hand-relic", playerId: MOCK_IDS.local, attachedToInstanceId: "local-hand-char" }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-char"].zone).toBe("FIELD"); expect(next.cardInstances["local-hand-relic"].attachedToInstanceId).toBe("local-hand-char"); });
   it("moves verse through resolution to graveyard", () => { let next = applyGameAction(buildMockGameState(), { type: "PLAY_VERSE", instanceId: "local-hand-verse", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-verse"].zone).toBe("VERSE_RESOLUTION"); next = applyGameAction(next, { type: "RESOLVE_VERSE", instanceId: "local-hand-verse", playerId: MOCK_IDS.local }, mockCardDefinitionsById); expect(next.cardInstances["local-hand-verse"].zone).toBe("GRAVEYARD"); });

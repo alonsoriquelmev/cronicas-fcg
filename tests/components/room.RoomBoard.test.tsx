@@ -336,7 +336,9 @@ describe("RoomBoard terminal confirmations", () => {
 
   it("restores own Main and Essence deck context draws without enabling rival decks", async () => {
     const user = userEvent.setup();
-    render(<RoomBoard view={boardView()} sessionToken="session" />);
+    const view = boardView();
+    view.game.phase = "MEDIODIA";
+    render(<RoomBoard view={view} sessionToken="session" />);
     const rivalPanel = screen.getByTestId("resource-panel-rival");
     const ownPanel = screen.getByTestId("resource-panel-own");
 
@@ -375,6 +377,28 @@ describe("RoomBoard terminal confirmations", () => {
     fireEvent.contextMenu(within(screen.getByTestId("resource-panel-own")).getByTestId("card-back-MAIN_DECK"));
     expect(within(screen.getByTestId("context-menu")).queryByRole("button", { name: "Robar" })).toBeNull();
     expect(screen.getByRole("button", { name: "Mirar" })).toBeTruthy();
+  });
+
+  it("hides the Main Deck draw during Alba but keeps the Essence draw", () => {
+    const view = boardView();
+    view.game.phase = "ALBA";
+    render(<RoomBoard view={view} sessionToken="session" />);
+    const ownPanel = screen.getByTestId("resource-panel-own");
+    fireEvent.contextMenu(within(ownPanel).getByTestId("card-back-MAIN_DECK"));
+    expect(within(screen.getByTestId("context-menu")).queryByRole("button", { name: "Robar" })).toBeNull();
+    fireEvent.contextMenu(within(ownPanel).getByTestId("card-back-ESSENCE_DECK"));
+    expect(within(screen.getByTestId("context-menu")).getByRole("button", { name: "Robar" })).toBeTruthy();
+  });
+
+  it("mass untap includes own Characters and leaves the button hidden when nothing is tapped", async () => {
+    const user = userEvent.setup();
+    const view = boardView();
+    const character = view.game.cardInstances.find((card) => card.instanceId === "local-hand-char")!;
+    character.zone = "FIELD";
+    character.tapped = true;
+    render(<RoomBoard view={view} sessionToken="session" />);
+    await user.click(screen.getByRole("button", { name: "Enderezar cartas" }));
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "UNTAP_ALL_ESSENCES", playerId: "PLAYER_LOCAL" } }));
   });
 
   it("consumes virtual Essences from the own editor", async () => {

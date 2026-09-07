@@ -171,6 +171,10 @@ export function RoomBoard({
       setError("El jugador inicial no roba durante su primer Amanecer.");
       return false;
     }
+    if (view.game && action.type === "DRAW_CARD" && view.game.phase === "ALBA") {
+      setError("No se puede robar del Mazo Principal durante Alba.");
+      return false;
+    }
     if (view.game && (action.type === "PLAY_CHARACTER" || action.type === "PLAY_CHARACTER_ATTACH_RELIC" || action.type === "PLAY_RELIC") && view.game.phase !== "MEDIODIA") {
       setError("Personajes y Reliquias solo pueden jugarse durante Mediodia.");
       return false;
@@ -499,7 +503,7 @@ export function RoomBoard({
               onInspect={inspect}
               onContextMenu={openMenu}
               sanctuaryBackground={sanctuaryBackground}
-              allowMainDraw={!isOpeningTurn(view.game, me) || view.game.phase !== "AMANECER"}
+              allowMainDraw={view.game.phase !== "ALBA" && (!isOpeningTurn(view.game, me) || view.game.phase !== "AMANECER")}
             />
           </aside>
         </div>
@@ -1204,7 +1208,7 @@ function BoardSide({
       virtualEssenceCount={virtualEssenceCount}
       virtualEssencePending={virtualEssencePending}
       onEditVirtualEssence={onEditVirtualEssence}
-      onUntapAllEssences={!opponent && essences.some((card) => card.tapped) ? () => onAction?.({ type: "UNTAP_ALL_ESSENCES", playerId }) : undefined}
+      onUntapAllEssences={!opponent && (essences.some((card) => card.tapped) || characters.some((card) => card.tapped)) ? () => onAction?.({ type: "UNTAP_ALL_ESSENCES", playerId }) : undefined}
     />
   );
   const hiddenFieldCards = field.filter((card) => card.hidden);
@@ -1870,9 +1874,9 @@ function EssenceField({
           type="button"
           className="absolute left-2 top-1 z-20 border border-emerald-200/40 px-1.5 py-0.5 text-[8px] uppercase tracking-wider text-emerald-100 hover:border-emerald-100"
           onClick={onUntapAllEssences}
-          aria-label="Enderezar todas las Esencias"
+          aria-label="Enderezar cartas"
         >
-          Enderezar Esencias
+          Enderezar cartas
         </button>
       )}
       {cards.length > 0 && (

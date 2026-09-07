@@ -52,6 +52,7 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
   const deckLookAction = input.type === "LOOK_AT_MAIN_DECK" || input.type === "SEARCH_MAIN_DECK" || input.type === "REORDER_DECK_LOOK" || input.type === "RESOLVE_DECK_LOOK" || input.type === "SET_DECK_SEARCH_REVEALED" || input.type === "RESOLVE_DECK_SEARCH" || input.type === "CLOSE_DECK_SEARCH";
   const deckActionsBlockedByLook = input.type === "DRAW_CARD" || input.type === "SEARCH_MAIN_DECK" || input.type === "SHUFFLE_MAIN_DECK" || input.type === "SEND_MAIN_DECK_TOP_TO_GRAVEYARD" || input.type === "SHUFFLE_CARD_INTO_MAIN_DECK";
   if (deckActionsBlockedByLook && state.deckLooks?.[actorId]) throw new Error("Resolve the active deck look first");
+  if (input.type === "DRAW_CARD" && state.phase === "ALBA") throw new Error("No se puede robar del Mazo Principal durante ALBA");
   if (input.type === "DRAW_CARD" && state.phase === "AMANECER" && isOpeningTurn(state, actorId)) throw new Error("El jugador inicial no roba durante su primer Amanecer");
   if (deckLookAction && input.playerId !== actorId) throw new Error("Deck look targets another seat");
   if (input.type === "LOOK_AT_MAIN_DECK") {
