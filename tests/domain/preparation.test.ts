@@ -31,7 +31,6 @@ const validMainDeck = Array.from(
 const validLoadout = () => ({
   faction: "TEST",
   mainDeck: [...validMainDeck],
-  arsenal: [],
   sanctuary: sanctuaryId,
   essenceDeck: defaultEssenceDeck(mockCardCatalog, "TEST"),
 });
@@ -253,7 +252,6 @@ describe("MISSION_003 deck preparation rules", () => {
     const loadout = {
       faction: "CAOS",
       mainDeck: [...foreignCards, ...ownCards],
-      arsenal: [],
       sanctuary: "caos-sanctuary",
       essenceDeck: Array.from(
         { length: ESSENCE_DECK_SIZE },
@@ -281,6 +279,14 @@ describe("MISSION_003 deck preparation rules", () => {
         subtype: "SPECIAL",
         essenceKind: "SPECIAL" as const,
       })),
+      {
+        id: "valor-special",
+        name: "Especial Valor",
+        type: "ESSENCE",
+        factionId: "VALOR",
+        subtype: "SPECIAL",
+        essenceKind: "SPECIAL",
+      },
       {
         id: "basic",
         name: "Basica",
@@ -322,7 +328,6 @@ describe("MISSION_003 deck preparation rules", () => {
         { length: MAIN_DECK_SIZE },
         (_, index) => `character-${index % 12}`,
       ),
-      arsenal: [],
       sanctuary: "sanctuary",
       essenceDeck: [
         "special-0",
@@ -337,9 +342,32 @@ describe("MISSION_003 deck preparation rules", () => {
         "basic",
       ],
     };
-    expect(validateLoadout(loadout, catalog, "ALLIANCES")).toMatchObject({
+    expect(validateLoadout(loadout, catalog, "FACTION_WAR")).toMatchObject({
       ok: false,
       error: "No puedes usar mas de 4 Esencias Especiales",
+    });
+
+    const allianceLoadout = {
+      ...loadout,
+      essenceDeck: [
+        "special-0",
+        "special-1",
+        "special-2",
+        "valor-special",
+        "basic",
+        "basic",
+        "basic",
+        "basic",
+        "basic",
+        "basic",
+      ],
+    };
+    expect(
+      validateLoadout(allianceLoadout, catalog, "ALLIANCES"),
+    ).toMatchObject({
+      ok: false,
+      error:
+        "No puedes usar mas de 2 Esencias Especiales de una faccion en Alianzas",
     });
   });
 });

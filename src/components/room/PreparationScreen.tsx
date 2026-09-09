@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { api } from "@/../convex/_generated/api";
 import { cardCatalog, cardDefinitionsById } from "@/data/cards/catalog";
 import type { CardDefinition } from "@/domain/cards/card.types";
@@ -13,13 +13,14 @@ import {
   copyTextToClipboard,
 } from "@/components/room/room.invite";
 import {
-  ARSENAL_SIZE,
+  alliedCardCount,
   defaultEssenceDeck,
   essenceDefinitions,
   formatCardType,
   isSpecialEssence,
   mainDeckDefinitions,
   MAX_SPECIAL_ESSENCES,
+  MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION,
   PREPARATION_FACTIONS,
   sanctuaryDefinitions,
   validateEssenceOrder,
@@ -186,7 +187,6 @@ export function PreparationScreen({
   const ownLoadout = preparation?.you?.loadout;
   const [faction, setFaction] = useState(ownLoadout?.faction ?? "ORDEN");
   const [deck, setDeck] = useState<string[]>(ownLoadout?.mainDeck ?? []);
-  const [arsenal, setArsenal] = useState<string[]>(ownLoadout?.arsenal ?? []);
   const [sanctuary, setSanctuary] = useState(
     ownLoadout?.sanctuary ??
       sanctuaryDefinitions(cardCatalog, "ORDEN")[0]?.id ??
@@ -248,28 +248,12 @@ export function PreparationScreen({
   const changeFaction = (value: string) => {
     setFaction(value);
     setDeck([]);
-    setArsenal([]);
     setSanctuary(sanctuaryDefinitions(cardCatalog, value)[0]?.id ?? "");
     setEssenceOrder(defaultEssenceDeck(cardCatalog, value, activeFormat));
   };
   const addCard = (id: string) => {
     if ((counts[id] ?? 0) < 3 && deck.length < 35)
       setDeck((current) => [...current, id]);
-  };
-  const addArsenalCard = (id: string) => {
-    if (
-      ([...deck, ...arsenal].filter((cardId) => cardId === id).length ?? 0) <
-        3 &&
-      arsenal.length < ARSENAL_SIZE
-    )
-      setArsenal((current) => [...current, id]);
-  };
-  const removeArsenalCard = (id: string) => {
-    const index = arsenal.lastIndexOf(id);
-    if (index >= 0)
-      setArsenal((current) =>
-        current.filter((_, currentIndex) => currentIndex !== index),
-      );
   };
   const removeCard = (id: string) => {
     const index = deck.lastIndexOf(id);
@@ -297,7 +281,6 @@ export function PreparationScreen({
       name,
       faction,
       mainDeck: [...deck],
-      arsenal: [...arsenal],
       sanctuary,
       essenceDeck: [...essenceOrder],
     };
@@ -313,7 +296,6 @@ export function PreparationScreen({
     if (!saved) return;
     setFaction(saved.faction);
     setDeck([...saved.mainDeck]);
-    setArsenal([...(saved.arsenal ?? [])]);
     setSanctuary(saved.sanctuary);
     setEssenceOrder([...saved.essenceDeck]);
   };
@@ -326,7 +308,6 @@ export function PreparationScreen({
         loadout: {
           faction,
           mainDeck: deck,
-          arsenal,
           sanctuary,
           essenceDeck: essenceOrder,
         },
@@ -339,24 +320,47 @@ export function PreparationScreen({
       );
     }
   };
-  const toggleSpecialEssence = (id: string) => {
-    const selected = essenceOrder.filter((cardId) =>
-      isSpecialEssence(cardDefinitionsById[cardId]),
-    );
-    const nextSpecials = selected.includes(id)
-      ? selected.filter((cardId) => cardId !== id)
-      : selected.length < MAX_SPECIAL_ESSENCES
-        ? [...selected, id]
-        : selected;
+  const rebuildEssenceOrder = (specials: string[]) => {
     const basics = defaultEssenceDeck(
       cardCatalog,
       faction,
       activeFormat,
     ).filter((cardId) => !isSpecialEssence(cardDefinitionsById[cardId]));
-    const next = [...nextSpecials];
+    const next = [...specials];
     for (let index = 0; next.length < 10 && basics.length > 0; index += 1)
       next.push(basics[index % basics.length]);
     setEssenceOrder(next.slice(0, 10));
+  };
+  const addSpecialEssence = (id: string) => {
+    const selected = essenceOrder.filter((cardId) =>
+      isSpecialEssence(cardDefinitionsById[cardId]),
+    );
+    const definition = cardDefinitionsById[id];
+    if (!definition || !isSpecialEssence(definition)) return;
+    const factionLimit =
+      activeFormat === "ALLIANCES"
+        ? MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION
+        : MAX_SPECIAL_ESSENCES;
+    const sameFactionCount = selected.filter(
+      (cardId) =>
+        cardDefinitionsById[cardId]?.factionId === definition.factionId,
+    ).length;
+    if (
+      selected.length >= MAX_SPECIAL_ESSENCES ||
+      sameFactionCount >= factionLimit
+    )
+      return;
+    rebuildEssenceOrder([...selected, id]);
+  };
+  const removeSpecialEssence = (id: string) => {
+    const selected = essenceOrder.filter((cardId) =>
+      isSpecialEssence(cardDefinitionsById[cardId]),
+    );
+    const index = selected.lastIndexOf(id);
+    if (index < 0) return;
+    rebuildEssenceOrder(
+      selected.filter((_, currentIndex) => currentIndex !== index),
+    );
   };
   const confirmOrder = async () => {
     setError("");
@@ -575,16 +579,14 @@ export function PreparationScreen({
             specialEssences={specialEssences}
             counts={counts}
             deck={deck}
-            arsenal={arsenal}
             essenceOrder={essenceOrder}
             sanctuary={sanctuary}
             sanctuaryOptions={sanctuaryOptions}
             submitted={submitted}
             onAdd={addCard}
             onRemove={removeCard}
-            onAddArsenal={addArsenalCard}
-            onRemoveArsenal={removeArsenalCard}
-            onToggleSpecial={toggleSpecialEssence}
+            onAddSpecial={addSpecialEssence}
+            onRemoveSpecial={removeSpecialEssence}
             onSanctuaryChange={setSanctuary}
             onFill={fillTestDeck}
             onSubmit={() => void submit()}
@@ -749,16 +751,14 @@ function DeckSelection({
   specialEssences,
   counts,
   deck,
-  arsenal,
   essenceOrder,
   sanctuary,
   sanctuaryOptions,
   submitted,
   onAdd,
   onRemove,
-  onAddArsenal,
-  onRemoveArsenal,
-  onToggleSpecial,
+  onAddSpecial,
+  onRemoveSpecial,
   onSanctuaryChange,
   onFill,
   onSubmit,
@@ -778,16 +778,14 @@ function DeckSelection({
   specialEssences: CatalogEntry[];
   counts: Record<string, number>;
   deck: string[];
-  arsenal: string[];
   essenceOrder: string[];
   sanctuary: string;
   sanctuaryOptions: CatalogEntry[];
   submitted: boolean;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
-  onAddArsenal: (id: string) => void;
-  onRemoveArsenal: (id: string) => void;
-  onToggleSpecial: (id: string) => void;
+  onAddSpecial: (id: string) => void;
+  onRemoveSpecial: (id: string) => void;
   onSanctuaryChange: (id: string) => void;
   onFill: () => void;
   onSubmit: () => void;
@@ -802,22 +800,47 @@ function DeckSelection({
 }) {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
-  const [factionFilter, setFactionFilter] = useState("ALL");
-  const arsenalCounts = arsenal.reduce<Record<string, number>>(
-    (result, id) => ({ ...result, [id]: (result[id] ?? 0) + 1 }),
-    {},
+  const [selectedFactions, setSelectedFactions] = useState<string[] | null>(
+    null,
+  );
+  useEffect(() => setSelectedFactions(null), [faction]);
+  const allCards = [...available, ...specialEssences];
+  const availableFactionIds = Array.from(
+    new Set(
+      allCards
+        .map((card) => card.factionId)
+        .filter((id): id is string => Boolean(id)),
+    ),
   );
   const selectedSpecials = essenceOrder.filter((id) =>
     isSpecialEssence(cardDefinitionsById[id]),
   );
-  const alliedCount = [...deck, ...arsenal, ...essenceOrder].filter(
-    (id) => cardDefinitionsById[id]?.factionId !== faction,
-  ).length;
-  const visibleCards = available.filter(
+  const specialCounts = selectedSpecials.reduce<Record<string, number>>(
+    (result, id) => ({ ...result, [id]: (result[id] ?? 0) + 1 }),
+    {},
+  );
+  const specialFactionCounts = selectedSpecials.reduce<Record<string, number>>(
+    (result, id) => {
+      const factionId = cardDefinitionsById[id]?.factionId;
+      if (factionId) result[factionId] = (result[factionId] ?? 0) + 1;
+      return result;
+    },
+    {},
+  );
+  const alliedCount =
+    format === "ALLIANCES"
+      ? alliedCardCount(
+          [...deck, ...essenceOrder],
+          cardDefinitionsById,
+          faction,
+        )
+      : 0;
+  const visibleCards = allCards.filter(
     (card) =>
       card.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
       (typeFilter === "ALL" || card.type === typeFilter) &&
-      (factionFilter === "ALL" || card.factionId === factionFilter),
+      (selectedFactions === null ||
+        selectedFactions.includes(card.factionId ?? "")),
   );
   return (
     <div className="mt-6">
@@ -837,14 +860,18 @@ function DeckSelection({
             ))}
           </select>
         </label>
-        <div className="text-right text-xs uppercase tracking-widest text-zinc-500">
-          <p>{format === "ALLIANCES" ? "Alianza" : "Faccion"}</p>
-          <strong
-            className={alliedCount > 12 ? "text-rose-200" : "text-emerald-200"}
-          >
-            {alliedCount} / 12 cartas aliadas
-          </strong>
-        </div>
+        {format === "ALLIANCES" && (
+          <div className="text-right text-xs uppercase tracking-widest text-zinc-500">
+            <p>Alianza</p>
+            <strong
+              className={
+                alliedCount > 12 ? "text-rose-200" : "text-emerald-200"
+              }
+            >
+              {alliedCount} / 12 cartas aliadas
+            </strong>
+          </div>
+        )}
         <button
           type="button"
           disabled={submitted}
@@ -878,32 +905,59 @@ function DeckSelection({
               <option value="VERSE">Versos</option>
             </select>
           </label>
-          <label className="text-xs uppercase tracking-widest text-zinc-500">
-            Faccion de cartas
-            <select
-              value={factionFilter}
-              onChange={(event) => setFactionFilter(event.target.value)}
-              className="mt-2 block border border-white/15 bg-[#15120f] px-2 py-2 text-xs text-zinc-100"
-            >
-              <option value="ALL">Todas</option>
-              {PREPARATION_FACTIONS.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <fieldset className="text-xs uppercase tracking-widest text-zinc-500">
+            <legend>Facciones de cartas</legend>
+            <div className="mt-2 flex max-w-sm flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => setSelectedFactions(null)}
+                className={`border px-2 py-1 text-[10px] ${selectedFactions === null ? "border-emerald-300/60 text-emerald-100" : "border-white/15 text-zinc-500"}`}
+              >
+                Todas
+              </button>
+              {availableFactionIds.map((factionId) => {
+                const option = PREPARATION_FACTIONS.find(
+                  (item) => item.id === factionId,
+                );
+                const checked =
+                  selectedFactions === null ||
+                  selectedFactions.includes(factionId);
+                return (
+                  <label
+                    key={factionId}
+                    className={`flex cursor-pointer items-center gap-1 border px-2 py-1 text-[10px] ${checked ? "border-amber-200/40 text-amber-100" : "border-white/10 text-zinc-600"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() =>
+                        setSelectedFactions((current) => {
+                          const next =
+                            current === null
+                              ? availableFactionIds.filter(
+                                  (id) => id !== factionId,
+                                )
+                              : current.includes(factionId)
+                                ? current.filter((id) => id !== factionId)
+                                : [...current, factionId];
+                          return next.length === availableFactionIds.length
+                            ? null
+                            : next;
+                        })
+                      }
+                      className="sr-only"
+                    />
+                    {option?.name ?? factionId}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
         </div>
         <div className="flex flex-wrap items-end justify-end gap-3 text-xs uppercase tracking-widest text-zinc-500">
           <span>
             Principal{" "}
             <strong className="text-amber-100">{deck.length} / 35</strong>
-          </span>
-          <span>
-            Arsenal{" "}
-            <strong className="text-amber-100">
-              {arsenal.length} / {ARSENAL_SIZE}
-            </strong>
           </span>
           <span>
             Esencias{" "}
@@ -948,7 +1002,9 @@ function DeckSelection({
               >
                 <option value="">Seleccionar deck</option>
                 {savedDecks.map((saved) => (
-                  <option key={saved.id} value={saved.id}>{saved.name}</option>
+                  <option key={saved.id} value={saved.id}>
+                    {saved.name}
+                  </option>
                 ))}
               </select>
             </label>
@@ -977,8 +1033,16 @@ function DeckSelection({
             {visibleCards.map((card, index) => {
               const preview = preparationCard(card.id, index);
               const definition = cardDefinitionsById[card.id];
-              const mainCount = counts[card.id] ?? 0;
-              const arsenalCount = arsenalCounts[card.id] ?? 0;
+              const isEssence = card.type === "ESSENCE";
+              const cardCount = isEssence
+                ? (specialCounts[card.id] ?? 0)
+                : (counts[card.id] ?? 0);
+              const sameFactionSpecialCount =
+                specialFactionCounts[card.factionId ?? ""] ?? 0;
+              const specialFactionLimit =
+                format === "ALLIANCES"
+                  ? MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION
+                  : MAX_SPECIAL_ESSENCES;
               return (
                 <div
                   key={card.id}
@@ -1000,40 +1064,49 @@ function DeckSelection({
                   </div>
                   <div className="flex shrink-0 flex-col items-center gap-1">
                     <span className="text-[10px] text-amber-100">
-                      {mainCount + arsenalCount}
+                      {cardCount}
                     </span>
-                    {mainCount + arsenalCount > 0 && (
-                      <span data-testid={`available-card-count-${card.id}`} className="sr-only">
-                        {mainCount + arsenalCount}
+                    {cardCount > 0 && (
+                      <span
+                        data-testid={`available-card-count-${card.id}`}
+                        className="sr-only"
+                      >
+                        {cardCount}
                       </span>
                     )}
                     <div className="flex gap-1">
                       <button
                         type="button"
-                        aria-label={`Anadir ${card.name} al principal`}
+                        aria-label={`${isEssence ? "Anadir" : "Anadir"} ${card.name} ${isEssence ? "a esencias" : "al principal"}`}
                         disabled={
                           submitted ||
-                          mainCount + arsenalCount >= 3 ||
-                          deck.length >= 35
+                          (isEssence
+                            ? selectedSpecials.length >= MAX_SPECIAL_ESSENCES ||
+                              sameFactionSpecialCount >= specialFactionLimit
+                            : cardCount >= 3 || deck.length >= 35)
                         }
-                        onClick={() => onAdd(card.id)}
+                        onClick={() =>
+                          isEssence ? onAddSpecial(card.id) : onAdd(card.id)
+                        }
                         className="h-6 w-6 border border-emerald-300/30 text-xs text-emerald-100 disabled:opacity-30"
                       >
                         +
                       </button>
-                      <button
-                        type="button"
-                        aria-label={`Anadir ${card.name} al arsenal`}
-                        disabled={
-                          submitted ||
-                          mainCount + arsenalCount >= 3 ||
-                          arsenal.length >= ARSENAL_SIZE
-                        }
-                        onClick={() => onAddArsenal(card.id)}
-                        className="h-6 w-6 border border-amber-200/30 text-xs text-amber-100 disabled:opacity-30"
-                      >
-                        A
-                      </button>
+                      {cardCount > 0 && (
+                        <button
+                          type="button"
+                          aria-label={`Quitar ${card.name} del mostrador`}
+                          disabled={submitted}
+                          onClick={() =>
+                            isEssence
+                              ? onRemoveSpecial(card.id)
+                              : onRemove(card.id)
+                          }
+                          className="h-6 w-6 border border-rose-300/30 text-xs text-rose-100 disabled:opacity-30"
+                        >
+                          -
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1079,58 +1152,22 @@ function DeckSelection({
           <div className="mt-4 border-t border-white/10 pt-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs uppercase tracking-widest text-amber-100">
-                Arsenal
-              </h3>
-              <strong className="text-xs text-amber-200">
-                {arsenal.length} / {ARSENAL_SIZE}
-              </strong>
-            </div>
-            <div className="mt-2 space-y-1">
-              {Object.entries(arsenalCounts).map(([id, count]) => (
-                <div
-                  key={id}
-                  className="flex items-center justify-between text-xs text-zinc-300"
-                >
-                  <span>
-                    {cardDefinitionsById[id]?.name ?? id} x{count}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={submitted}
-                    onClick={() => onRemoveArsenal(id)}
-                    className="h-5 w-5 border border-white/20"
-                  >
-                    -
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-4 border-t border-white/10 pt-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase tracking-widest text-amber-100">
                 Esencias Especiales
               </h3>
               <strong className="text-xs text-amber-200">
                 {selectedSpecials.length} / {MAX_SPECIAL_ESSENCES}
               </strong>
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-1">
-              {specialEssences.map((card) => (
-                <button
-                  key={card.id}
-                  type="button"
-                  disabled={
-                    submitted ||
-                    (!selectedSpecials.includes(card.id) &&
-                      selectedSpecials.length >= MAX_SPECIAL_ESSENCES)
-                  }
-                  onClick={() => onToggleSpecial(card.id)}
-                  className={`border px-2 py-1 text-left text-[10px] ${selectedSpecials.includes(card.id) ? "border-emerald-300/60 bg-emerald-950/30 text-emerald-100" : "border-white/15 text-zinc-400"}`}
-                >
-                  {card.name}
-                </button>
-              ))}
+            <div className="mt-2 space-y-1 text-xs text-zinc-400">
+              {selectedSpecials.length === 0 ? (
+                <p>No hay esencias especiales seleccionadas.</p>
+              ) : (
+                Array.from(new Set(selectedSpecials)).map((id) => (
+                  <p key={id}>
+                    {cardDefinitionsById[id]?.name ?? id} x{specialCounts[id]}
+                  </p>
+                ))
+              )}
             </div>
           </div>
           <label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">
@@ -1154,7 +1191,6 @@ function DeckSelection({
               submitted ||
               deck.length !== 35 ||
               essenceOrder.length !== 10 ||
-              arsenal.length > ARSENAL_SIZE ||
               alliedCount > 12 ||
               !sanctuary
             }

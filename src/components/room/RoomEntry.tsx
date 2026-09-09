@@ -6,12 +6,24 @@ import { useState } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { GameFormat } from "@/domain/preparation/preparation";
 
-export const sessionKey = (code: string) => "cronicas:room:" + code.toUpperCase() + ":session";
-export function saveRoomSession(result: { code: string; playerSessionToken: string; seat: string; playerId: string }) {
+export const sessionKey = (code: string) =>
+  "cronicas:room:" + code.toUpperCase() + ":session";
+export function saveRoomSession(result: {
+  code: string;
+  playerSessionToken: string;
+  seat: string;
+  playerId: string;
+}) {
   window.localStorage.setItem(sessionKey(result.code), JSON.stringify(result));
 }
 
-export function RoomEntry({ initialCode = "", onSessionSaved }: { initialCode?: string; onSessionSaved?: (token: string) => void }) {
+export function RoomEntry({
+  initialCode = "",
+  onSessionSaved,
+}: {
+  initialCode?: string;
+  onSessionSaved?: (token: string) => void;
+}) {
   const router = useRouter();
   const createRoom = useMutation(api.rooms.createRoom);
   const joinRoom = useMutation(api.rooms.joinRoom);
@@ -20,8 +32,16 @@ export function RoomEntry({ initialCode = "", onSessionSaved }: { initialCode?: 
   const [format, setFormat] = useState<GameFormat>("FACTION_WAR");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const invitationMode = Boolean(initialCode.trim());
 
-  const run = async (operation: () => Promise<{ code: string; playerSessionToken: string; seat: string; playerId: string }>) => {
+  const run = async (
+    operation: () => Promise<{
+      code: string;
+      playerSessionToken: string;
+      seat: string;
+      playerId: string;
+    }>,
+  ) => {
     setBusy(true);
     setError("");
     try {
@@ -30,7 +50,11 @@ export function RoomEntry({ initialCode = "", onSessionSaved }: { initialCode?: 
       onSessionSaved?.(result.playerSessionToken);
       router.push("/room/" + result.code);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "No se pudo conectar a la sala");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "No se pudo conectar a la sala",
+      );
     } finally {
       setBusy(false);
     }
@@ -39,14 +63,79 @@ export function RoomEntry({ initialCode = "", onSessionSaved }: { initialCode?: 
   return (
     <section className="mx-auto flex min-h-[80vh] max-w-2xl items-center justify-center">
       <div className="w-full max-w-md border border-amber-200/20 bg-[#15120f] p-8 shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.28em] text-amber-300/70">Cronicas FCG / Multiplayer</p>
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-300/70">
+          Cronicas FCG / Multiplayer
+        </p>
         <h1 className="mt-2 text-3xl font-semibold">Abrir una mesa privada</h1>
-        <label className="mt-8 block text-xs uppercase tracking-widest text-zinc-500">Nombre temporal<input value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none focus:border-emerald-300/60" placeholder="Tu nombre" maxLength={40} /></label>
-        <label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">Formato<select value={format} onChange={(event) => setFormat(event.target.value as GameFormat)} className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 text-sm text-zinc-100"><option value="FACTION_WAR">Guerra de Facciones</option><option value="ALLIANCES">Alianzas</option></select></label>
-        <div className="mt-5 grid grid-cols-2 gap-3"><button disabled={busy || !name.trim()} onClick={() => void run(() => createRoom({ displayName: name, format }))} className="border border-emerald-300/50 bg-emerald-300/10 px-3 py-2 text-sm text-emerald-100 disabled:opacity-40">Crear sala</button><button disabled={busy || !name.trim() || !code.trim()} onClick={() => void run(() => joinRoom({ code, displayName: name }))} className="border border-amber-200/40 bg-amber-200/10 px-3 py-2 text-sm text-amber-100 disabled:opacity-40">Unirse</button></div>
-        <label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">Codigo de sala<input value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-amber-300/60" placeholder="ABC123" maxLength={6} /></label>
-        {error && <p role="alert" className="mt-4 border border-rose-300/30 bg-rose-950/30 p-3 text-sm text-rose-100">{error}</p>}
-        <p className="mt-6 border-t border-white/10 pt-4 text-xs leading-5 text-zinc-500">El formato se define al crear la sala y ambos jugadores lo comparten durante la preparacion.</p>
+        <label className="mt-8 block text-xs uppercase tracking-widest text-zinc-500">
+          Nombre temporal
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none focus:border-emerald-300/60"
+            placeholder="Tu nombre"
+            maxLength={40}
+          />
+        </label>
+        {invitationMode ? (
+          <p className="mt-5 border border-white/10 bg-black/20 p-3 text-xs leading-5 text-zinc-500">
+            El formato de esta sala fue definido por quien la creo.
+          </p>
+        ) : (
+          <label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">
+            Formato
+            <select
+              value={format}
+              onChange={(event) => setFormat(event.target.value as GameFormat)}
+              className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 text-sm text-zinc-100"
+            >
+              <option value="FACTION_WAR">Guerra de Facciones</option>
+              <option value="ALLIANCES">Alianzas</option>
+            </select>
+          </label>
+        )}
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            disabled={busy || !name.trim()}
+            onClick={() =>
+              void run(() => createRoom({ displayName: name, format }))
+            }
+            className="border border-emerald-300/50 bg-emerald-300/10 px-3 py-2 text-sm text-emerald-100 disabled:opacity-40"
+          >
+            Crear sala
+          </button>
+          <button
+            disabled={busy || !name.trim() || !code.trim()}
+            onClick={() =>
+              void run(() => joinRoom({ code, displayName: name }))
+            }
+            className="border border-amber-200/40 bg-amber-200/10 px-3 py-2 text-sm text-amber-100 disabled:opacity-40"
+          >
+            Unirse
+          </button>
+        </div>
+        <label className="mt-5 block text-xs uppercase tracking-widest text-zinc-500">
+          Codigo de sala
+          <input
+            value={code}
+            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            className="mt-2 w-full border border-white/15 bg-black/20 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-amber-300/60"
+            placeholder="ABC123"
+            maxLength={6}
+          />
+        </label>
+        {error && (
+          <p
+            role="alert"
+            className="mt-4 border border-rose-300/30 bg-rose-950/30 p-3 text-sm text-rose-100"
+          >
+            {error}
+          </p>
+        )}
+        <p className="mt-6 border-t border-white/10 pt-4 text-xs leading-5 text-zinc-500">
+          El formato se define al crear la sala y ambos jugadores lo comparten
+          durante la preparacion.
+        </p>
       </div>
     </section>
   );
