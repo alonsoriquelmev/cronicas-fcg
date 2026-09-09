@@ -7,7 +7,7 @@ import type { CardView, FaceDownPublicCardView, GameState, PlayerViewCard } from
 import { createPreparedGameState, definitions } from "./gameSeed";
 import { assertAuthorizedAction } from "./roomAuthority";
 import { applyMulligan } from "../src/domain/preparation/mulligan";
-import { resolveStartingPlayerRolls, rollStartingPlayerDie, validateEssenceOrder, validateLoadout, type PlayerLoadout, type PreparationPlayer, type PreparationState, type MulliganDecision } from "../src/domain/preparation/preparation";
+import { resolveStartingPlayerRolls, rollStartingPlayerDie, validateEssenceOrder, validateLoadout, type GameFormat, type PlayerLoadout, type PreparationPlayer, type PreparationState, type MulliganDecision } from "../src/domain/preparation/preparation";
 import type { CardDefinition } from "../src/domain/cards/card.types";
 
 const roomCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -19,15 +19,16 @@ async function getRoom(ctx: ConvexContext, code: string) {
   return ctx.db.query("rooms").withIndex("by_code", (q) => q.eq("code", code)).unique();
 }
 
-function preparationForPlayers(playerOne: { playerId: string; displayName: string }, playerTwo: { playerId: string; displayName: string }): PreparationState {
+function preparationForPlayers(playerOne: { playerId: string; displayName: string }, playerTwo: { playerId: string; displayName: string }, format: GameFormat = "FACTION_WAR"): PreparationState {
   const player = (value: { playerId: string; displayName: string }): PreparationPlayer => ({ playerId: value.playerId, displayName: value.displayName, faction: null, loadout: null, startingPlayerRoll: null, essenceConfirmed: false, initialDrawConfirmed: false, mulliganDecision: null, mulliganSelectedInstanceIds: [] });
-  return { stage: "DECK_SELECTION", startingPlayerId: null, startingPlayerRollWinnerId: null, players: { [playerOne.playerId]: player(playerOne), [playerTwo.playerId]: player(playerTwo) } };
+  return { format, stage: "DECK_SELECTION", startingPlayerId: null, startingPlayerRollWinnerId: null, players: { [playerOne.playerId]: player(playerOne), [playerTwo.playerId]: player(playerTwo) } };
 }
 
 export function preparationView(preparation: PreparationState | undefined, viewerId: string) {
   if (!preparation) return null;
   const own = preparation.players[viewerId];
   return {
+    format: preparation.format ?? "FACTION_WAR",
     stage: preparation.stage,
     startingPlayerId: preparation.startingPlayerId,
     startingPlayerRollWinnerId: preparation.startingPlayerRollWinnerId ?? null,
@@ -45,13 +46,14 @@ export function assertRoomInGame(status: string) {
 }
 
 export const createRoom = mutation({
-  args: { displayName: v.string() },
+  args: { displayName: v.string(), format: v.optional(v.union(v.literal("FACTION_WAR"), v.literal("ALLIANCES"))) },
   returns: v.object({ code: v.string(), playerSessionToken: v.string(), seat: v.string(), playerId: v.string() }),
   handler: async (ctx, args) => {
     const code = roomCode();
     const sessionToken = token();
     const currentPlayerId = playerId();
-    const roomId = await ctx.db.insert("rooms", { code, status: "WAITING_FOR_PLAYER", createdAt: Date.now() });
+    const format = args.format ?? "FACTION_WAR";
+    const roomId = await ctx.db.insert("rooms", { code, status: "WAITING_FOR_PLAYER", format, createdAt: Date.now() });
     await ctx.db.insert("players", { roomId, displayName: args.displayName.trim().slice(0, 40) || "Jugador", seat: "PLAYER_1", playerId: currentPlayerId, sessionToken, createdAt: Date.now() });
     return { code, playerSessionToken: sessionToken, seat: "PLAYER_1", playerId: currentPlayerId };
   },
@@ -71,7 +73,7 @@ export const joinRoom = mutation({
     await ctx.db.insert("players", { roomId: room._id, displayName: args.displayName.trim().slice(0, 40) || "Jugador", seat: "PLAYER_2", playerId: currentPlayerId, sessionToken, createdAt: Date.now() });
     const playerOne = players.find((player) => player.seat === "PLAYER_1");
     if (!playerOne) throw new Error("Room has no host");
-    await ctx.db.patch(room._id, { status: "PREPARATION", preparation: preparationForPlayers({ playerId: playerOne.playerId, displayName: playerOne.displayName }, { playerId: currentPlayerId, displayName: args.displayName.trim().slice(0, 40) || "Jugador" }) });
+    await ctx.db.patch(room._id, { status: "PREPARATION", preparation: preparationForPlayers({ playerId: playerOne.playerId, displayName: playerOne.displayName }, { playerId: currentPlayerId, displayName: args.displayName.trim().slice(0, 40) || "Jugador" }, room.format ?? "FACTION_WAR") });
     return { code: room.code, playerSessionToken: sessionToken, seat: "PLAYER_2", playerId: currentPlayerId };
   },
 });
@@ -165,7 +167,7 @@ export const submitLoadout = mutation({
     if (found.room.status !== "PREPARATION") throw new Error("Room is not in preparation");
     const preparation = found.room.preparation as PreparationState | undefined;
     if (!preparation || preparation.stage !== "DECK_SELECTION") throw new Error("Loadouts are locked");
-    const checked = validateLoadout(args.loadout, definitions);
+    const checked = validateLoadout(args.loadout, definitions, preparation.format ?? found.room.format ?? "FACTION_WAR");
     if (!checked.ok) throw new Error(checked.error);
     const current = preparation.players[found.player.playerId];
     if (!current) throw new Error("Player is not part of preparation");

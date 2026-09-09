@@ -1,7 +1,9 @@
 import type { CardDefinition, CardType } from "../cards/card.types";
 
 export const MAIN_DECK_SIZE = 35;
+export const ARSENAL_SIZE = 7;
 export const MAX_COPIES_PER_CARD = 3;
+export const MAX_SPECIAL_ESSENCES = 4;
 export const INITIAL_HAND_SIZE = 5;
 export const ESSENCE_DECK_SIZE = 10;
 
@@ -16,40 +18,52 @@ export const PREPARATION_FACTIONS = [
 
 export type PreparationStage = "DECK_SELECTION" | "STARTING_PLAYER" | "ESSENCE_ORDERING" | "INITIAL_DRAW" | "MULLIGAN" | "READY_TO_START" | "IN_GAME";
 export type MulliganDecision = "KEEP" | "MULLIGAN";
-export type PlayerLoadout = { faction: string; mainDeck: string[]; sanctuary: string; essenceDeck: string[] };
+export type GameFormat = "FACTION_WAR" | "ALLIANCES";
+export type PlayerLoadout = { faction: string; mainDeck: string[]; arsenal?: string[]; sanctuary: string; essenceDeck: string[] };
 export type PreparationPlayer = { playerId: string; displayName: string; faction: string | null; loadout: PlayerLoadout | null; startingPlayerRoll: number | null; essenceConfirmed: boolean; initialDrawConfirmed: boolean; mulliganDecision: MulliganDecision | null; mulliganSelectedInstanceIds: string[] };
-export type PreparationState = { stage: PreparationStage; startingPlayerId: string | null; startingPlayerRollWinnerId: string | null; players: Record<string, PreparationPlayer> };
+export type PreparationState = { format?: GameFormat; stage: PreparationStage; startingPlayerId: string | null; startingPlayerRollWinnerId: string | null; players: Record<string, PreparationPlayer> };
 
 export type CatalogEntry = Pick<CardDefinition, "id" | "name" | "type" | "factionId" | "subtype"> & { essenceKind?: "BASIC" | "SPECIAL" };
 
-export function eligibleForFaction(definition: CatalogEntry, faction: string) {
-  return definition.factionId === faction;
+export function allianceFactions(faction: string) {
+  if (faction === "VALOR") return new Set(["ORDEN", "CAOS", "INSTINTO", "FORJA"]);
+  if (["ORDEN", "CAOS", "INSTINTO", "FORJA"].includes(faction)) return new Set(["VALOR"]);
+  return new Set<string>();
 }
 
-export function mainDeckDefinitions(catalog: CatalogEntry[], faction: string) {
-  return catalog.filter((definition) => eligibleForFaction(definition, faction) && definition.type !== "ESSENCE" && definition.type !== "SANCTUARY");
+export function eligibleForFaction(definition: CatalogEntry, faction: string, format: GameFormat = "FACTION_WAR") {
+  if (definition.factionId === faction) return true;
+  return format === "ALLIANCES" && allianceFactions(faction).has(definition.factionId ?? "");
+}
+
+export function mainDeckDefinitions(catalog: CatalogEntry[], faction: string, format: GameFormat = "FACTION_WAR") {
+  return catalog.filter((definition) => eligibleForFaction(definition, faction, format) && definition.type !== "ESSENCE" && definition.type !== "SANCTUARY");
 }
 
 export function sanctuaryDefinitions(catalog: CatalogEntry[], faction: string) {
   return catalog.filter((definition) => definition.type === "SANCTUARY" && (definition.factionId === faction || definition.factionId === null));
 }
 
-export function essenceDefinitions(catalog: CatalogEntry[], faction: string) {
-  return catalog.filter((definition) => eligibleForFaction(definition, faction) && definition.type === "ESSENCE");
+export function essenceDefinitions(catalog: CatalogEntry[], faction: string, format: GameFormat = "FACTION_WAR") {
+  return catalog.filter((definition) => eligibleForFaction(definition, faction, format) && definition.type === "ESSENCE");
 }
 
-export function defaultEssenceDeck(catalog: CatalogEntry[], faction: string) {
-  const available = essenceDefinitions(catalog, faction);
-  const source = available;
-  return Array.from({ length: ESSENCE_DECK_SIZE }, (_, index) => source[index % source.length]?.id).filter((id): id is string => Boolean(id));
+export function defaultEssenceDeck(catalog: CatalogEntry[], faction: string, format: GameFormat = "FACTION_WAR") {
+  const available = essenceDefinitions(catalog, faction, format);
+  const specials = available.filter(isSpecialEssence).slice(0, MAX_SPECIAL_ESSENCES).map((definition) => definition.id);
+  const basics = available.filter((definition) => !isSpecialEssence(definition));
+  const source = basics.length > 0 ? basics : available;
+  const result = [...specials];
+  for (let index = result.length; result.length < ESSENCE_DECK_SIZE && source.length > 0; index += 1) result.push(source[index % source.length].id);
+  return result.slice(0, ESSENCE_DECK_SIZE);
 }
 
 export function allowedSpecialEssencePositions(startingPlayer: boolean) {
   return new Set(startingPlayer ? [2, 4, 6, 8] : [1, 3, 5, 7]);
 }
 
-export function isSpecialEssence(definition: CatalogEntry) {
-  return definition.type === "ESSENCE" && (definition.essenceKind === "SPECIAL" || definition.subtype === "SPECIAL");
+export function isSpecialEssence(definition: CatalogEntry | undefined) {
+  return definition?.type === "ESSENCE" && (definition.essenceKind === "SPECIAL" || definition.subtype === "SPECIAL");
 }
 
 export function rollStartingPlayerDie(random: () => number = Math.random) {
@@ -73,30 +87,36 @@ export function validateEssenceOrder(orderedDefinitionIds: unknown, catalog: Rec
   return { ok: true as const };
 }
 
-export function validateLoadout(input: unknown, catalog: Record<string, CatalogEntry>) {
+export function validateLoadout(input: unknown, catalog: Record<string, CatalogEntry>, format: GameFormat = "FACTION_WAR") {
   if (!input || typeof input !== "object") return { ok: false as const, error: "Loadout invalido" };
   const value = input as Partial<PlayerLoadout>;
   const isLegacyTestCatalog = value.faction === "TEST" && Object.keys(catalog).some((id) => id.startsWith("mock-"));
   if (typeof value.faction !== "string" || (!PREPARATION_FACTIONS.some((faction) => faction.id === value.faction) && !isLegacyTestCatalog)) return { ok: false as const, error: "Faccion invalida" };
   if (!Array.isArray(value.mainDeck) || value.mainDeck.length !== MAIN_DECK_SIZE) return { ok: false as const, error: `El Mazo Principal debe tener exactamente ${MAIN_DECK_SIZE} cartas` };
+  const arsenal = Array.isArray(value.arsenal) ? value.arsenal : [];
+  if (arsenal.length > ARSENAL_SIZE) return { ok: false as const, error: `El Arsenal no puede superar las ${ARSENAL_SIZE} cartas` };
   if (!Array.isArray(value.essenceDeck) || value.essenceDeck.length !== ESSENCE_DECK_SIZE) return { ok: false as const, error: `El Mazo de Esencias debe tener exactamente ${ESSENCE_DECK_SIZE} cartas` };
   if (typeof value.sanctuary !== "string") return { ok: false as const, error: "Debes seleccionar un Santuario" };
   const counts = new Map<string, number>();
-  for (const cardId of value.mainDeck) {
+  for (const cardId of [...value.mainDeck, ...arsenal]) {
     if (typeof cardId !== "string") return { ok: false as const, error: "El Mazo Principal contiene una carta invalida" };
     const definition = catalog[cardId];
     const count = (counts.get(cardId) ?? 0) + 1;
     counts.set(cardId, count);
-    if (!definition || !eligibleForFaction(definition, value.faction) || definition.type === "ESSENCE" || definition.type === "SANCTUARY") return { ok: false as const, error: "El Mazo Principal contiene una carta no elegible" };
+    if (!definition || !eligibleForFaction(definition, value.faction, format) || definition.type === "ESSENCE" || definition.type === "SANCTUARY") return { ok: false as const, error: "El Mazo contiene una carta no elegible" };
     if (count > MAX_COPIES_PER_CARD) return { ok: false as const, error: `No puedes usar mas de ${MAX_COPIES_PER_CARD} copias de una carta` };
   }
   const sanctuary = catalog[value.sanctuary];
   if (!sanctuary || sanctuary.type !== "SANCTUARY" || (sanctuary.factionId !== value.faction && sanctuary.factionId !== null)) return { ok: false as const, error: "Santuario invalido" };
   for (const cardId of value.essenceDeck) {
     const definition = typeof cardId === "string" ? catalog[cardId] : undefined;
-    if (!definition || definition.type !== "ESSENCE" || !eligibleForFaction(definition, value.faction)) return { ok: false as const, error: "Configuracion de Esencias invalida" };
+    if (!definition || definition.type !== "ESSENCE" || !eligibleForFaction(definition, value.faction, format)) return { ok: false as const, error: "Configuracion de Esencias invalida" };
   }
-  return { ok: true as const, loadout: { faction: value.faction, mainDeck: [...value.mainDeck], sanctuary: value.sanctuary, essenceDeck: [...value.essenceDeck] } };
+  const specialEssences = value.essenceDeck.filter((cardId) => isSpecialEssence(catalog[cardId as string])).length;
+  if (specialEssences > MAX_SPECIAL_ESSENCES) return { ok: false as const, error: `No puedes usar mas de ${MAX_SPECIAL_ESSENCES} Esencias Especiales` };
+  const foreignCards = [...value.mainDeck, ...value.essenceDeck, ...arsenal].filter((cardId) => catalog[cardId as string]?.factionId !== value.faction).length;
+  if (format === "ALLIANCES" && foreignCards > 12) return { ok: false as const, error: "El limite de cartas de facciones aliadas es 12" };
+  return { ok: true as const, loadout: { faction: value.faction, mainDeck: [...value.mainDeck], arsenal: [...arsenal], sanctuary: value.sanctuary, essenceDeck: [...value.essenceDeck] } };
 }
 
 export function formatCardType(type: CardType) {

@@ -134,7 +134,7 @@ describe("PreparationScreen waiting room sharing", () => {
     expect(screen.queryByTestId(/^available-card-count-/)).toBeNull();
     expect(screen.queryByRole("button", { name: /Quitar/ })).toBeNull();
 
-    await user.click(screen.getByRole("button", { name: "Anadir Aratto" }));
+    await user.click(screen.getByRole("button", { name: "Anadir Aratto al principal" }));
     expect(screen.getByTestId("available-card-count-MDK-055").textContent).toBe("1");
     expect(screen.getByRole("button", { name: "Quitar Aratto" })).toBeTruthy();
 
@@ -162,7 +162,7 @@ describe("PreparationScreen waiting room sharing", () => {
 
     render(<PreparationScreen view={deckSelectionView} sessionToken="session" />);
     await user.selectOptions(screen.getByLabelText("Faccion"), "CAOS");
-    await user.click(screen.getByRole("button", { name: "Anadir Aratto" }));
+    await user.click(screen.getByRole("button", { name: "Anadir Aratto al principal" }));
     await user.type(screen.getByLabelText("Nombre del deck"), "Caos guardado");
     await user.click(screen.getByRole("button", { name: "Guardar deck" }));
 

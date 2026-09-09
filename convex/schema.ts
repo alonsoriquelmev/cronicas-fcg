@@ -6,6 +6,7 @@ export default defineSchema({
   rooms: defineTable({
     code: v.string(),
     status: v.union(v.literal("WAITING_FOR_PLAYER"), v.literal("PREPARATION"), v.literal("IN_GAME"), v.literal("FINISHED"), v.literal("ABANDONED")),
+    format: v.optional(v.union(v.literal("FACTION_WAR"), v.literal("ALLIANCES"))),
     preparation: v.optional(v.any()),
     createdAt: v.number(),
   }).index("by_code", ["code"]),
