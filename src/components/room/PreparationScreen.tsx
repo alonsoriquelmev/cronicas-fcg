@@ -1072,21 +1072,19 @@ function DeckSelection({
                       >
                         +
                       </button>
-                      {cardCount > 0 && (
-                        <button
-                          type="button"
-                          aria-label={`Quitar ${card.name} del mostrador`}
-                          disabled={submitted}
-                          onClick={() =>
-                            isEssence
-                              ? onRemoveSpecial(card.id)
-                              : onRemove(card.id)
-                          }
-                          className="h-6 w-6 border border-rose-300/30 text-xs text-rose-100 disabled:opacity-30"
-                        >
-                          -
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        aria-label={`Quitar ${card.name} del mostrador`}
+                        disabled={submitted || cardCount === 0}
+                        onClick={() =>
+                          isEssence
+                            ? onRemoveSpecial(card.id)
+                            : onRemove(card.id)
+                        }
+                        className="h-6 w-6 border border-rose-300/30 text-xs text-rose-100 disabled:opacity-30"
+                      >
+                        -
+                      </button>
                     </div>
                   </div>
                 </div>

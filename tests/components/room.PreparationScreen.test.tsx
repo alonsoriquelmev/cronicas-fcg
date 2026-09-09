@@ -270,8 +270,12 @@ describe("PreparationScreen waiting room sharing", () => {
 
     expect(screen.queryByTestId("available-card-count-MDK-055")).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Quitar Aratto del mostrador" }),
-    ).toBeNull();
+      (
+        screen.getByRole("button", {
+          name: "Quitar Aratto del mostrador",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
 
     await user.click(
       screen.getByRole("button", { name: "Anadir Aratto al principal" }),
