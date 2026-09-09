@@ -20,7 +20,7 @@ import {
   isSpecialEssence,
   mainDeckDefinitions,
   MAX_SPECIAL_ESSENCES,
-  MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION,
+  MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES,
   PREPARATION_FACTIONS,
   sanctuaryDefinitions,
   validateEssenceOrder,
@@ -337,18 +337,12 @@ export function PreparationScreen({
     );
     const definition = cardDefinitionsById[id];
     if (!definition || !isSpecialEssence(definition)) return;
-    const factionLimit =
+    const copyLimit =
       activeFormat === "ALLIANCES"
-        ? MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION
+        ? MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES
         : MAX_SPECIAL_ESSENCES;
-    const sameFactionCount = selected.filter(
-      (cardId) =>
-        cardDefinitionsById[cardId]?.factionId === definition.factionId,
-    ).length;
-    if (
-      selected.length >= MAX_SPECIAL_ESSENCES ||
-      sameFactionCount >= factionLimit
-    )
+    const sameCardCount = selected.filter((cardId) => cardId === id).length;
+    if (selected.length >= MAX_SPECIAL_ESSENCES || sameCardCount >= copyLimit)
       return;
     rebuildEssenceOrder([...selected, id]);
   };
@@ -819,14 +813,6 @@ function DeckSelection({
     (result, id) => ({ ...result, [id]: (result[id] ?? 0) + 1 }),
     {},
   );
-  const specialFactionCounts = selectedSpecials.reduce<Record<string, number>>(
-    (result, id) => {
-      const factionId = cardDefinitionsById[id]?.factionId;
-      if (factionId) result[factionId] = (result[factionId] ?? 0) + 1;
-      return result;
-    },
-    {},
-  );
   const alliedCount =
     format === "ALLIANCES"
       ? alliedCardCount(
@@ -903,6 +889,7 @@ function DeckSelection({
               <option value="CHARACTER">Personajes</option>
               <option value="RELIC">Reliquias</option>
               <option value="VERSE">Versos</option>
+              <option value="ESSENCE">Esencias Especiales</option>
             </select>
           </label>
           <fieldset className="text-xs uppercase tracking-widest text-zinc-500">
@@ -1037,11 +1024,10 @@ function DeckSelection({
               const cardCount = isEssence
                 ? (specialCounts[card.id] ?? 0)
                 : (counts[card.id] ?? 0);
-              const sameFactionSpecialCount =
-                specialFactionCounts[card.factionId ?? ""] ?? 0;
-              const specialFactionLimit =
+              const sameCardSpecialCount = specialCounts[card.id] ?? 0;
+              const specialCopyLimit =
                 format === "ALLIANCES"
-                  ? MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION
+                  ? MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES
                   : MAX_SPECIAL_ESSENCES;
               return (
                 <div
@@ -1082,7 +1068,7 @@ function DeckSelection({
                           submitted ||
                           (isEssence
                             ? selectedSpecials.length >= MAX_SPECIAL_ESSENCES ||
-                              sameFactionSpecialCount >= specialFactionLimit
+                              sameCardSpecialCount >= specialCopyLimit
                             : cardCount >= 3 || deck.length >= 35)
                         }
                         onClick={() =>

@@ -320,7 +320,7 @@ describe("MISSION_003 deck preparation rules", () => {
       defaultEssenceDeck(specialCatalog, "CAOS").filter((id) =>
         id.startsWith("special-"),
       ).length,
-    ).toBe(4);
+    ).toBe(0);
 
     const loadout = {
       faction: "CAOS",
@@ -351,9 +351,9 @@ describe("MISSION_003 deck preparation rules", () => {
       ...loadout,
       essenceDeck: [
         "special-0",
+        "special-0",
         "special-1",
-        "special-2",
-        "valor-special",
+        "special-1",
         "basic",
         "basic",
         "basic",
@@ -364,10 +364,15 @@ describe("MISSION_003 deck preparation rules", () => {
     };
     expect(
       validateLoadout(allianceLoadout, catalog, "ALLIANCES"),
+    ).toMatchObject({ ok: true });
+
+    allianceLoadout.essenceDeck[2] = "special-0";
+    expect(
+      validateLoadout(allianceLoadout, catalog, "ALLIANCES"),
     ).toMatchObject({
       ok: false,
       error:
-        "No puedes usar mas de 2 Esencias Especiales de una faccion en Alianzas",
+        "No puedes usar mas de 2 copias de una Esencia Especial en Alianzas",
     });
   });
 });

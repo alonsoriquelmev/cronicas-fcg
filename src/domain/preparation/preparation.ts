@@ -3,7 +3,7 @@ import type { CardDefinition, CardType } from "../cards/card.types";
 export const MAIN_DECK_SIZE = 35;
 export const MAX_COPIES_PER_CARD = 3;
 export const MAX_SPECIAL_ESSENCES = 4;
-export const MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION = 2;
+export const MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES = 2;
 export const INITIAL_HAND_SIZE = 5;
 export const ESSENCE_DECK_SIZE = 10;
 
@@ -126,24 +126,11 @@ export function defaultEssenceDeck(
   format: GameFormat = "FACTION_WAR",
 ) {
   const available = essenceDefinitions(catalog, faction, format);
-  const specialCounts = new Map<string, number>();
-  const specials = available
-    .filter(isSpecialEssence)
-    .filter((definition) => {
-      if (format !== "ALLIANCES") return true;
-      const factionId = definition.factionId ?? "";
-      const count = specialCounts.get(factionId) ?? 0;
-      if (count >= MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION) return false;
-      specialCounts.set(factionId, count + 1);
-      return true;
-    })
-    .slice(0, MAX_SPECIAL_ESSENCES)
-    .map((definition) => definition.id);
   const basics = available.filter(
     (definition) => !isSpecialEssence(definition),
   );
-  const source = basics.length > 0 ? basics : available;
-  const result = [...specials];
+  const source = basics;
+  const result: string[] = [];
   for (
     let index = result.length;
     result.length < ESSENCE_DECK_SIZE && source.length > 0;
@@ -311,13 +298,12 @@ export function validateLoadout(
     for (const cardId of value.essenceDeck) {
       const definition = catalog[cardId as string];
       if (!isSpecialEssence(definition)) continue;
-      const factionId = definition?.factionId ?? "";
-      const count = (specialCounts.get(factionId) ?? 0) + 1;
-      specialCounts.set(factionId, count);
-      if (count > MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION)
+      const count = (specialCounts.get(cardId as string) ?? 0) + 1;
+      specialCounts.set(cardId as string, count);
+      if (count > MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES)
         return {
           ok: false as const,
-          error: `No puedes usar mas de ${MAX_SPECIAL_ESSENCES_PER_ALLIED_FACTION} Esencias Especiales de una faccion en Alianzas`,
+          error: `No puedes usar mas de ${MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES} copias de una Esencia Especial en Alianzas`,
         };
     }
   }
