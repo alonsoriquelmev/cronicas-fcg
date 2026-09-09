@@ -946,12 +946,6 @@ function DeckSelection({
             Principal{" "}
             <strong className="text-amber-100">{deck.length} / 35</strong>
           </span>
-          <span>
-            Esencias{" "}
-            <strong className="text-amber-100">
-              {essenceOrder.length} / 10
-            </strong>
-          </span>
         </div>
       </div>
       <div className="mt-4 grid gap-3 border-b border-white/10 pb-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

@@ -7,6 +7,7 @@ import {
   MAX_COPIES_PER_CARD,
   defaultEssenceDeck,
   essenceDefinitions,
+  isSpecialEssence,
   mainDeckDefinitions,
   sanctuaryDefinitions,
   validateEssenceOrder,
@@ -159,6 +160,26 @@ describe("MISSION_003 deck preparation rules", () => {
     expect(validateLoadout(errantesLoadout, errantesCatalog)).toMatchObject({
       ok: true,
     });
+  });
+
+  it("fills an Alliance essence deck with basics from the main faction only", () => {
+    const allianceEssences = defaultEssenceDeck(
+      cardCatalog,
+      "INSTINTO",
+      "ALLIANCES",
+    );
+    const catalog = Object.fromEntries(
+      cardCatalog.map((definition) => [definition.id, definition]),
+    );
+
+    expect(allianceEssences).toHaveLength(ESSENCE_DECK_SIZE);
+    expect(
+      allianceEssences.every(
+        (id) =>
+          catalog[id]?.factionId === "INSTINTO" &&
+          !isSpecialEssence(catalog[id]),
+      ),
+    ).toBe(true);
   });
 
   it("allows Valor as an ally in Alianzas but not in Guerra de Facciones", () => {

@@ -127,7 +127,8 @@ export function defaultEssenceDeck(
 ) {
   const available = essenceDefinitions(catalog, faction, format);
   const basics = available.filter(
-    (definition) => !isSpecialEssence(definition),
+    (definition) =>
+      definition.factionId === faction && !isSpecialEssence(definition),
   );
   const source = basics;
   const result: string[] = [];
