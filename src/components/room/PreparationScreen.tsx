@@ -1169,6 +1169,7 @@ function DeckSelection({
               submitted ||
               deck.length !== 35 ||
               essenceOrder.length !== 10 ||
+              selectedSpecials.length !== MAX_SPECIAL_ESSENCES ||
               alliedCount > 12 ||
               !sanctuary
             }

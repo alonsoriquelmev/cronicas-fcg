@@ -21,19 +21,33 @@ const catalog = Object.fromEntries(
 const mainIds = mainDeckDefinitions(mockCardCatalog, "TEST").map(
   (definition) => definition.id,
 );
-const essenceIds = essenceDefinitions(mockCardCatalog, "TEST").map(
-  (definition) => definition.id,
-);
 const sanctuaryId = sanctuaryDefinitions(mockCardCatalog, "TEST")[0].id;
 const validMainDeck = Array.from(
   { length: MAIN_DECK_SIZE },
   (_, index) => mainIds[index % mainIds.length],
 );
+const completeEssenceDeck = (
+  entries: CatalogEntry[],
+  faction: string,
+  format: "FACTION_WAR" | "ALLIANCES" = "FACTION_WAR",
+) => {
+  const basics = defaultEssenceDeck(entries, faction, format);
+  const specials = essenceDefinitions(entries, faction, format)
+    .filter(isSpecialEssence)
+    .map((definition) => definition.id);
+  return [
+    ...Array.from(
+      { length: 4 },
+      (_, index) => specials[index % specials.length],
+    ),
+    ...basics.slice(0, ESSENCE_DECK_SIZE - 4),
+  ];
+};
 const validLoadout = () => ({
   faction: "TEST",
   mainDeck: [...validMainDeck],
   sanctuary: sanctuaryId,
-  essenceDeck: defaultEssenceDeck(mockCardCatalog, "TEST"),
+  essenceDeck: completeEssenceDeck(mockCardCatalog, "TEST"),
 });
 
 describe("MISSION_003 deck preparation rules", () => {
@@ -128,7 +142,7 @@ describe("MISSION_003 deck preparation rules", () => {
         (_, index) => caosMainIds[index % caosMainIds.length],
       ),
       sanctuary: sanctuaryDefinitions(cardCatalog, "CAOS")[0].id,
-      essenceDeck: defaultEssenceDeck(cardCatalog, "CAOS"),
+      essenceDeck: completeEssenceDeck(cardCatalog, "CAOS"),
     };
 
     expect(caosMainIds).toHaveLength(14);
@@ -152,7 +166,7 @@ describe("MISSION_003 deck preparation rules", () => {
         (_, index) => errantesMainIds[index % errantesMainIds.length],
       ),
       sanctuary: sanctuaryDefinitions(cardCatalog, "ERRANTES")[0].id,
-      essenceDeck: defaultEssenceDeck(cardCatalog, "ERRANTES"),
+      essenceDeck: completeEssenceDeck(cardCatalog, "ERRANTES"),
     };
 
     expect(errantesMainIds).toHaveLength(14);
@@ -217,7 +231,7 @@ describe("MISSION_003 deck preparation rules", () => {
     ).toEqual(["caos-character"]);
   });
 
-  it("counts allied cards across the main deck and Arsenal in Alianzas", () => {
+  it("counts allied cards across the main deck and Essences in Alianzas", () => {
     const allyCatalog: CatalogEntry[] = [
       ...Array.from({ length: 8 }, (_, index) => ({
         id: `caos-${index}`,
@@ -241,6 +255,14 @@ describe("MISSION_003 deck preparation rules", () => {
         subtype: "BASIC",
         essenceKind: "BASIC",
       },
+      ...Array.from({ length: 2 }, (_, index) => ({
+        id: `caos-special-${index}`,
+        name: `Especial Caos ${index}`,
+        type: "ESSENCE" as const,
+        factionId: "CAOS",
+        subtype: "SPECIAL",
+        essenceKind: "SPECIAL" as const,
+      })),
       {
         id: "caos-sanctuary",
         name: "Santuario Caos",
@@ -274,10 +296,18 @@ describe("MISSION_003 deck preparation rules", () => {
       faction: "CAOS",
       mainDeck: [...foreignCards, ...ownCards],
       sanctuary: "caos-sanctuary",
-      essenceDeck: Array.from(
-        { length: ESSENCE_DECK_SIZE },
-        () => "caos-essence",
-      ),
+      essenceDeck: [
+        "caos-special-0",
+        "caos-special-0",
+        "caos-special-1",
+        "caos-special-1",
+        "caos-essence",
+        "caos-essence",
+        "caos-essence",
+        "caos-essence",
+        "caos-essence",
+        "caos-essence",
+      ],
     };
 
     expect(validateLoadout(loadout, catalog, "ALLIANCES")).toMatchObject({
@@ -365,7 +395,7 @@ describe("MISSION_003 deck preparation rules", () => {
     };
     expect(validateLoadout(loadout, catalog, "FACTION_WAR")).toMatchObject({
       ok: false,
-      error: "No puedes usar mas de 4 Esencias Especiales",
+      error: "Debes seleccionar exactamente 4 Esencias Especiales",
     });
 
     const allianceLoadout = {

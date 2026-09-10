@@ -289,10 +289,10 @@ export function validateLoadout(
   const specialEssences = value.essenceDeck.filter((cardId) =>
     isSpecialEssence(catalog[cardId as string]),
   ).length;
-  if (specialEssences > MAX_SPECIAL_ESSENCES)
+  if (specialEssences !== MAX_SPECIAL_ESSENCES)
     return {
       ok: false as const,
-      error: `No puedes usar mas de ${MAX_SPECIAL_ESSENCES} Esencias Especiales`,
+      error: `Debes seleccionar exactamente ${MAX_SPECIAL_ESSENCES} Esencias Especiales`,
     };
   if (format === "ALLIANCES") {
     const specialCounts = new Map<string, number>();
