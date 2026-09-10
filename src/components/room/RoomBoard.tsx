@@ -15,7 +15,7 @@ import { createPortal } from "react-dom";
 import { api } from "@/../convex/_generated/api";
 import type { CardDefinition } from "@/domain/cards/card.types";
 import type { GameAction } from "@/domain/game/game.actions";
-import type { CardInstance, CharacterStatChangeProposal, DeckLookState, GamePhase, VirtualEssenceChangeProposal } from "@/domain/game/game.types";
+import type { CardInstance, CharacterStatChangeProposal, DeckLookState, ExtraEssenceDrawProposal, GamePhase, VirtualEssenceChangeProposal } from "@/domain/game/game.types";
 import { getPhaseBlockers, isOpeningTurn, phaseBlockerLabels, phaseBlockersFromError } from "@/domain/game/phase-rules";
 import {
   CHARACTER_MARKER_KINDS,
@@ -78,6 +78,7 @@ type RoomView = {
     deckReveal?: { playerId: string; instanceIds: string[] } | null;
     pendingStatChanges?: Record<string, CharacterStatChangeProposal>;
     pendingVirtualEssenceChanges?: Record<string, VirtualEssenceChangeProposal>;
+    pendingExtraEssenceDraws?: Record<string, ExtraEssenceDrawProposal>;
     characterMarkers?: Record<string, CharacterMarker[]>;
     hiddenCounts?: HiddenCounts;
     publicCounts?: HiddenCounts;
@@ -262,8 +263,21 @@ export function RoomBoard({
     if (action === "LOOK_MAIN_DECK") setDeckLookCount(1);
     if (action === "SEARCH_MAIN_DECK")
       void run({ type: "SEARCH_MAIN_DECK", playerId: me });
-    if (action === "DRAW_ESSENCE")
-      void run({ type: "DRAW_ESSENCE", playerId: me });
+    if (action === "DRAW_ESSENCE") {
+      const game = view.game;
+      if (game) {
+        const progress = game.phaseProgress;
+        const currentProgress = progress && progress.turnNumber === game.turnNumber && progress.playerId === game.activePlayerId
+          ? progress
+          : undefined;
+        const normalAlbaDraw = game.phase === "ALBA"
+          && game.activePlayerId === me
+          && !currentProgress?.essenceDrawn;
+        void run(normalAlbaDraw
+          ? { type: "DRAW_ESSENCE", playerId: me }
+          : { type: "REQUEST_EXTRA_ESSENCE_DRAW", proposalId: crypto.randomUUID(), playerId: me });
+      }
+    }
     if (action === "SEND_TOP_TO_GRAVEYARD")
       void run({ type: "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", playerId: me });
     if (action === "SHUFFLE_MAIN_DECK")
@@ -350,9 +364,12 @@ export function RoomBoard({
   const opponentProposal = pendingProposals.find((proposal) => proposal.proposerId !== me);
   const ownProposal = pendingProposals.find((proposal) => proposal.proposerId === me);
   const pendingVirtualEssences = Object.values(view.game.pendingVirtualEssenceChanges ?? {});
+  const pendingExtraEssenceDraws = Object.values(view.game.pendingExtraEssenceDraws ?? {});
   const characterMarkers = view.game.characterMarkers ?? {};
   const opponentVirtualEssenceProposal = pendingVirtualEssences.find((proposal) => proposal.playerId !== me);
   const ownVirtualEssenceProposal = pendingVirtualEssences.find((proposal) => proposal.playerId === me);
+  const opponentExtraEssenceDraw = pendingExtraEssenceDraws.find((proposal) => proposal.playerId !== me);
+  const ownExtraEssenceDraw = pendingExtraEssenceDraws.find((proposal) => proposal.playerId === me);
   const proposalCharacter = opponentProposal
     ? cards.find((card) => card.instanceId === opponentProposal.characterInstanceId)
     : undefined;
@@ -566,6 +583,17 @@ export function RoomBoard({
         {ownProposal && (
           <div role="status" className="fixed bottom-3 left-1/2 z-30 -translate-x-1/2 border border-amber-200/30 bg-[#171311] px-4 py-2 text-xs text-amber-100">
             Cambio de ATQ/PV pendiente de aprobacion rival
+          </div>
+        )}
+        {opponentExtraEssenceDraw && (
+          <ExtraEssenceDrawApproval
+            onApprove={() => void run({ type: "APPROVE_EXTRA_ESSENCE_DRAW", proposalId: opponentExtraEssenceDraw.proposalId, playerId: me, targetPlayerId: opponentExtraEssenceDraw.playerId })}
+            onReject={() => void run({ type: "REJECT_EXTRA_ESSENCE_DRAW", proposalId: opponentExtraEssenceDraw.proposalId, playerId: me, targetPlayerId: opponentExtraEssenceDraw.playerId })}
+          />
+        )}
+        {ownExtraEssenceDraw && (
+          <div role="status" className="fixed bottom-3 left-1/2 z-30 -translate-x-1/2 border border-amber-200/30 bg-[#171311] px-4 py-2 text-xs text-amber-100">
+            Robo extra de Esencia pendiente de aprobacion rival
           </div>
         )}
         {view.game.deckLook?.mode === "SEARCH" && (
@@ -2718,6 +2746,21 @@ function VirtualEssenceEditor({ current, pending, onClose, onSubmit, onConsume }
           <p className="mt-2 text-xs text-zinc-500">Resultado: {Math.max(0, current + amount)}</p>
           <div className="mt-5 flex justify-end gap-2"><button type="button" className="border border-white/20 px-3 py-2 text-xs" onClick={onClose}>Cancelar</button><button type="button" disabled={!amount || current + amount < 0} className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40" onClick={() => onSubmit(amount)}>Solicitar aprobacion</button></div>
         </>}
+      </section>
+    </div>
+  );
+}
+
+function ExtraEssenceDrawApproval({ onApprove, onReject }: { onApprove: () => void; onReject: () => void }) {
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Aprobar robo extra de Esencia" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4">
+      <section className="w-full max-w-sm border border-amber-200/30 bg-[#171311] p-5">
+        <h2 className="text-sm uppercase tracking-[0.2em] text-amber-100">Robo extra de Esencia</h2>
+        <p className="mt-3 text-sm text-zinc-300">El rival solicita robar una Esencia adicional. ¿Quieres aprobarlo?</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" className="border border-rose-300/40 px-3 py-2 text-xs text-rose-100" onClick={onReject}>Rechazar</button>
+          <button type="button" className="border border-emerald-300/40 px-3 py-2 text-xs text-emerald-100" onClick={onApprove}>Aprobar</button>
+        </div>
       </section>
     </div>
   );

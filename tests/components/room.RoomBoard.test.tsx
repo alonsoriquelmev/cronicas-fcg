@@ -334,7 +334,7 @@ describe("RoomBoard terminal confirmations", () => {
     expect(screen.getByRole("button", { name: "Quitar fondo" })).toBeTruthy();
   });
 
-  it("restores own Main and Essence deck context draws without enabling rival decks", async () => {
+  it("restores own Main deck actions and requests approval for an extra Essence draw", async () => {
     const user = userEvent.setup();
     const view = boardView();
     view.game.phase = "MEDIODIA";
@@ -359,7 +359,7 @@ describe("RoomBoard terminal confirmations", () => {
 
     fireEvent.contextMenu(within(ownPanel).getByTestId("card-back-ESSENCE_DECK"));
     await user.click(screen.getByRole("button", { name: "Robar" }));
-    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: { type: "DRAW_ESSENCE", playerId: "PLAYER_LOCAL" } }));
+    expect(finishMutation).toHaveBeenCalledWith(expect.objectContaining({ action: expect.objectContaining({ type: "REQUEST_EXTRA_ESSENCE_DRAW", playerId: "PLAYER_LOCAL" }) }));
 
     fireEvent.contextMenu(within(rivalPanel).getByTestId("card-back-MAIN_DECK"));
     expect(screen.queryByRole("button", { name: "Robar" })).toBeNull();

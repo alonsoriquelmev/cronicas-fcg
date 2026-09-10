@@ -53,6 +53,11 @@ export type VirtualEssenceChangeProposal = {
   amount: number;
 };
 
+export type ExtraEssenceDrawProposal = {
+  proposalId: string;
+  playerId: PlayerId;
+};
+
 export type TurnPhaseProgress = {
   turnNumber: number;
   playerId: PlayerId;
@@ -81,6 +86,7 @@ export type GameState = {
   deckLooks?: Record<PlayerId, DeckLookState>;
   pendingStatChanges?: Record<CardInstanceId, CharacterStatChangeProposal>;
   pendingVirtualEssenceChanges?: Record<PlayerId, VirtualEssenceChangeProposal>;
+  pendingExtraEssenceDraws?: Record<PlayerId, ExtraEssenceDrawProposal>;
   characterMarkers?: Record<CardInstanceId, CharacterMarker[]>;
 };
 

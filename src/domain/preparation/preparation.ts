@@ -3,7 +3,7 @@ import type { CardDefinition, CardType } from "../cards/card.types";
 export const MAIN_DECK_SIZE = 35;
 export const MAX_COPIES_PER_CARD = 3;
 export const MAX_SPECIAL_ESSENCES = 4;
-export const MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES = 2;
+export const MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES = 3;
 export const INITIAL_HAND_SIZE = 5;
 export const ESSENCE_DECK_SIZE = 10;
 

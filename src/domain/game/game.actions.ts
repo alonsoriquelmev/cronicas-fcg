@@ -15,6 +15,9 @@ export type GameAction =
   | { type: "MOVE_HAND_CARD_TO_GRAVEYARD"; instanceId: string; playerId: PlayerId }
   | { type: "SHUFFLE_CARD_INTO_MAIN_DECK"; instanceId: string; playerId: PlayerId; orderedInstanceIds?: string[] }
   | { type: "DRAW_ESSENCE"; playerId: PlayerId }
+  | { type: "REQUEST_EXTRA_ESSENCE_DRAW"; proposalId: string; playerId: PlayerId }
+  | { type: "APPROVE_EXTRA_ESSENCE_DRAW"; proposalId: string; playerId: PlayerId; targetPlayerId: PlayerId }
+  | { type: "REJECT_EXTRA_ESSENCE_DRAW"; proposalId: string; playerId: PlayerId; targetPlayerId: PlayerId }
   | { type: "RETURN_ESSENCE_TO_DECK_BOTTOM"; instanceId: string; playerId: PlayerId }
   | { type: "PLAY_CHARACTER"; instanceId: string; playerId: PlayerId }
   | { type: "PLAY_CHARACTER_ATTACH_RELIC"; characterInstanceId: string; relicInstanceId: string; playerId: PlayerId }

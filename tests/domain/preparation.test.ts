@@ -418,12 +418,13 @@ describe("MISSION_003 deck preparation rules", () => {
     ).toMatchObject({ ok: true });
 
     allianceLoadout.essenceDeck[2] = "special-0";
+    allianceLoadout.essenceDeck[3] = "special-0";
     expect(
       validateLoadout(allianceLoadout, catalog, "ALLIANCES"),
     ).toMatchObject({
       ok: false,
       error:
-        "No puedes usar mas de 2 copias de una Esencia Especial en Alianzas",
+        "No puedes usar mas de 3 copias de una Esencia Especial en Alianzas",
     });
   });
 });

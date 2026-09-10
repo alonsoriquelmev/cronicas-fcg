@@ -82,6 +82,22 @@ describe("MISSION_002 multiplayer boundaries", () => {
     expect(() => assertAuthorizedAction(state, { type: "DRAW_ESSENCE", playerId: "A" }, "A")).not.toThrow();
   });
 
+  it("requires rival approval for extra Essence draws and draws only after approval", () => {
+    let state = createInitialState("room-test", "A", "B", "A", "B");
+    state = applyGameAction(state, { type: "DRAW_ESSENCE", playerId: "A" });
+    expect(() => assertAuthorizedAction(state, { type: "DRAW_ESSENCE", playerId: "A" }, "A")).toThrow("una vez");
+
+    state.phase = "MEDIODIA";
+    const proposal = { type: "REQUEST_EXTRA_ESSENCE_DRAW" as const, proposalId: "essence-draw-1", playerId: "A" };
+    expect(() => assertAuthorizedAction(state, proposal, "A")).not.toThrow();
+    state = applyGameAction(state, proposal);
+    expect(state.cardInstances["A-essence-2"].zone).toBe("ESSENCE_DECK");
+    expect(() => assertAuthorizedAction(state, { type: "APPROVE_EXTRA_ESSENCE_DRAW", proposalId: "essence-draw-1", playerId: "A", targetPlayerId: "A" }, "A")).toThrow();
+    expect(() => assertAuthorizedAction(state, { type: "APPROVE_EXTRA_ESSENCE_DRAW", proposalId: "essence-draw-1", playerId: "B", targetPlayerId: "A" }, "B")).not.toThrow();
+    state = applyGameAction(state, { type: "APPROVE_EXTRA_ESSENCE_DRAW", proposalId: "essence-draw-1", playerId: "B", targetPlayerId: "A" });
+    expect(state.cardInstances["A-essence-2"].zone).toBe("ESSENCE_ZONE");
+  });
+
   it("authorizes only a valid own virtual Essence consumption", () => {
     const state = createInitialState("room-test", "A", "B", "A", "B");
     state.players.A.virtualEssenceCount = 2;

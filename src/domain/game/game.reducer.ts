@@ -11,6 +11,7 @@ const copy = (state: GameState): GameState => ({
   deckLooks: Object.fromEntries(Object.entries(state.deckLooks ?? {}).map(([playerId, look]) => [playerId, { ...look, orderedInstanceIds: [...look.orderedInstanceIds], revealedInstanceIds: [...(look.revealedInstanceIds ?? [])] }])),
   pendingStatChanges: { ...(state.pendingStatChanges ?? {}) },
   pendingVirtualEssenceChanges: { ...(state.pendingVirtualEssenceChanges ?? {}) },
+  pendingExtraEssenceDraws: { ...(state.pendingExtraEssenceDraws ?? {}) },
   characterMarkers: Object.fromEntries(Object.entries(state.characterMarkers ?? {}).map(([characterInstanceId, markers]) => [characterInstanceId, markers.map((marker) => ({ ...marker }))])),
   phaseProgress: state.phaseProgress ? { ...state.phaseProgress } : undefined,
 });
@@ -205,11 +206,35 @@ export function applyGameAction(state: GameState, action: GameAction, definition
       break;
     }
     case "DRAW_ESSENCE": {
+      const progress = getCurrentTurnPhaseProgress(next);
+      if (next.phase !== "ALBA" || next.activePlayerId !== action.playerId || progress.essenceDrawn) throw new Error("El robo normal de Esencia solo puede hacerse una vez durante ALBA");
       const card = cards(next, "ESSENCE_DECK", action.playerId)[0];
       if (card) {
         move(next, card.instanceId, "ESSENCE_ZONE", action.playerId);
-        if (next.activePlayerId === action.playerId && next.phase === "ALBA") next.phaseProgress = { ...getCurrentTurnPhaseProgress(next), essenceDrawn: true };
+        next.phaseProgress = { ...progress, essenceDrawn: true };
       }
+      break;
+    }
+    case "REQUEST_EXTRA_ESSENCE_DRAW": {
+      if (next.phase === "ALBA" && !getCurrentTurnPhaseProgress(next).essenceDrawn) throw new Error("El primer robo de Esencia del Alba no requiere aprobacion");
+      if (next.pendingExtraEssenceDraws?.[action.playerId]) throw new Error("Ya existe una solicitud de robo extra de Esencia pendiente");
+      if (!cards(next, "ESSENCE_DECK", action.playerId)[0]) throw new Error("No quedan Esencias en el mazo");
+      next.pendingExtraEssenceDraws![action.playerId] = { proposalId: action.proposalId, playerId: action.playerId };
+      break;
+    }
+    case "APPROVE_EXTRA_ESSENCE_DRAW": {
+      const proposal = next.pendingExtraEssenceDraws?.[action.targetPlayerId];
+      if (!proposal || proposal.proposalId !== action.proposalId) throw new Error("La solicitud de robo extra de Esencia ya no esta disponible");
+      const card = cards(next, "ESSENCE_DECK", action.targetPlayerId)[0];
+      if (!card) throw new Error("No quedan Esencias en el mazo");
+      move(next, card.instanceId, "ESSENCE_ZONE", action.targetPlayerId);
+      delete next.pendingExtraEssenceDraws![action.targetPlayerId];
+      break;
+    }
+    case "REJECT_EXTRA_ESSENCE_DRAW": {
+      const proposal = next.pendingExtraEssenceDraws?.[action.targetPlayerId];
+      if (!proposal || proposal.proposalId !== action.proposalId) throw new Error("La solicitud de robo extra de Esencia ya no esta disponible");
+      delete next.pendingExtraEssenceDraws![action.targetPlayerId];
       break;
     }
     case "RETURN_ESSENCE_TO_DECK_BOTTOM": move(next, action.instanceId, "ESSENCE_DECK", action.playerId); break;

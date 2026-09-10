@@ -4,8 +4,8 @@ import { definitions } from "./gameSeed";
 import { isCharacterMarkerKind } from "../src/domain/game/character-markers";
 import { getPhaseBlockers, isOpeningTurn, phaseBlockerError } from "../src/domain/game/phase-rules";
 
-const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "UNTAP_ALL_ESSENCES", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
-const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "RETURN_ESSENCE_TO_DECK_BOTTOM", "UNTAP_ALL_ESSENCES", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
+const allowed = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "REQUEST_EXTRA_ESSENCE_DRAW", "APPROVE_EXTRA_ESSENCE_DRAW", "REJECT_EXTRA_ESSENCE_DRAW", "RETURN_ESSENCE_TO_DECK_BOTTOM", "PLAY_CHARACTER", "PLAY_CHARACTER_ATTACH_RELIC", "PLAY_RELIC", "PLAY_VERSE", "RESOLVE_VERSE", "MOVE_CARD", "REORDER_FIELD", "ATTACH_RELIC", "DETACH_RELIC", "TAP_CARD", "UNTAP_CARD", "UNTAP_ALL_ESSENCES", "FLIP_FACE_UP", "FLIP_FACE_DOWN", "CHANGE_CARD_COUNTER", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION", "ADD_CHARACTER_MARKER", "REMOVE_CHARACTER_MARKER", "SET_PHASE", "END_TURN"]);
+const ownPlayerAction = new Set(["DRAW_CARD", "LOOK_AT_MAIN_DECK", "SEARCH_MAIN_DECK", "REORDER_DECK_LOOK", "RESOLVE_DECK_LOOK", "SET_DECK_SEARCH_REVEALED", "RESOLVE_DECK_SEARCH", "CLOSE_DECK_SEARCH", "SHUFFLE_MAIN_DECK", "SEND_MAIN_DECK_TOP_TO_GRAVEYARD", "MOVE_HAND_CARD_TO_GRAVEYARD", "SHUFFLE_CARD_INTO_MAIN_DECK", "DRAW_ESSENCE", "REQUEST_EXTRA_ESSENCE_DRAW", "RETURN_ESSENCE_TO_DECK_BOTTOM", "UNTAP_ALL_ESSENCES", "REQUEST_VIRTUAL_ESSENCE_CHANGE", "CONSUME_VIRTUAL_ESSENCE", "APPROVE_VIRTUAL_ESSENCE_CHANGE", "REJECT_VIRTUAL_ESSENCE_CHANGE", "PROPOSE_CHARACTER_STAT_CHANGE", "APPROVE_CHARACTER_STAT_CHANGE", "REJECT_CHARACTER_STAT_CHANGE", "CHANGE_SANCTUARY_HP", "SET_SANCTUARY_HP", "DEVASTATE_CARD", "REVERT_DEVASTATION"]);
 
 type AuthorityState = {
   cardInstances: Record<string, { ownerId: string; controllerId: string; zone: string; cardDefinitionId: string; attachedToInstanceId: string | null; tapped: boolean; manualAttackModifier?: number; manualHealthModifier?: number }>;
@@ -19,6 +19,7 @@ type AuthorityState = {
   turnNumber: number;
   phase: string;
   phaseProgress?: { turnNumber: number; playerId: string; essenceDrawn: boolean; mainCardDrawn: boolean };
+  pendingExtraEssenceDraws?: Record<string, { proposalId: string; playerId: string }>;
 };
 
 function characterStats(state: AuthorityState, characterInstanceId: string) {
@@ -54,6 +55,24 @@ export function assertAuthorizedAction(state: AuthorityState, action: GameAction
   if (deckActionsBlockedByLook && state.deckLooks?.[actorId]) throw new Error("Resolve the active deck look first");
   if (input.type === "DRAW_CARD" && state.phase === "ALBA") throw new Error("No se puede robar del Mazo Principal durante ALBA");
   if (input.type === "DRAW_CARD" && state.phase === "AMANECER" && isOpeningTurn(state, actorId)) throw new Error("El jugador inicial no roba durante su primer Amanecer");
+  if (input.type === "DRAW_ESSENCE") {
+    const progress = state.phaseProgress?.turnNumber === state.turnNumber && state.phaseProgress.playerId === state.activePlayerId
+      ? state.phaseProgress
+      : { essenceDrawn: false };
+    if (state.phase !== "ALBA" || state.activePlayerId !== actorId || progress.essenceDrawn) throw new Error("El robo normal de Esencia solo puede hacerse una vez durante ALBA");
+  }
+  if (input.type === "REQUEST_EXTRA_ESSENCE_DRAW") {
+    const progress = state.phaseProgress?.turnNumber === state.turnNumber && state.phaseProgress.playerId === state.activePlayerId ? state.phaseProgress : { essenceDrawn: false };
+    if (state.phase === "ALBA" && state.activePlayerId === actorId && !progress.essenceDrawn) throw new Error("El primer robo de Esencia del Alba no requiere aprobacion");
+    if (state.pendingExtraEssenceDraws?.[actorId]) throw new Error("Ya existe una solicitud de robo extra de Esencia pendiente");
+    if (!Object.values(state.cardInstances).some((candidate) => candidate.controllerId === actorId && candidate.zone === "ESSENCE_DECK")) throw new Error("No quedan Esencias en el mazo");
+  }
+  const extraEssenceApproval = input.type === "APPROVE_EXTRA_ESSENCE_DRAW" || input.type === "REJECT_EXTRA_ESSENCE_DRAW";
+  if (extraEssenceApproval) {
+    const targetPlayerId = String(input.targetPlayerId);
+    const proposal = state.pendingExtraEssenceDraws?.[targetPlayerId];
+    if (!proposal || proposal.proposalId !== input.proposalId || targetPlayerId === actorId || !state.players[actorId]) throw new Error("La solicitud de robo extra de Esencia no esta disponible");
+  }
   if (deckLookAction && input.playerId !== actorId) throw new Error("Deck look targets another seat");
   if (input.type === "LOOK_AT_MAIN_DECK") {
     const count = Number(input.count);
