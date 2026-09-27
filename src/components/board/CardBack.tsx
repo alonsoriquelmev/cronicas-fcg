@@ -13,18 +13,22 @@ type Props = {
   fill?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onContextMenu?: MouseEventHandler<HTMLDivElement>;
+  nextActionHint?: string;
 };
 
-export function CardBack({ label, count, deck = "CARD", enabled = false, showCount = true, fill = false, onClick, onContextMenu }: Props) {
+export function CardBack({ label, count, deck = "CARD", enabled = false, showCount = true, fill = false, onClick, onContextMenu, nextActionHint }: Props) {
   return <div
     role="button"
     tabIndex={0}
     aria-label={`${label}, ${count} cartas`}
+    aria-describedby={nextActionHint ? `deck-hint-${deck}` : undefined}
+    title={nextActionHint}
     data-deck={deck}
+    data-next-action={nextActionHint ? "true" : "false"}
     data-testid={`card-back-${deck}`}
     onClick={onClick}
     onContextMenu={onContextMenu}
-    className={`relative overflow-hidden ${fill ? "h-full w-full" : `${CARD_SIZE_CLASSES.back} border p-1`} shrink-0 cursor-context-menu text-center ${enabled ? "border-amber-200/40 bg-amber-950/30" : "border-white/10 bg-white/[0.03]"}`}
+    className={`relative overflow-hidden ${fill ? "h-full w-full" : `${CARD_SIZE_CLASSES.back} border p-1`} shrink-0 cursor-context-menu text-center ${enabled ? "border-amber-200/40 bg-amber-950/30" : "border-white/10 bg-white/[0.03]"} ${nextActionHint ? "next-action-pulse border-amber-200/90" : ""}`}
     style={{ aspectRatio: CARD_ASPECT_RATIO }}
   >
     <Image
@@ -36,6 +40,7 @@ export function CardBack({ label, count, deck = "CARD", enabled = false, showCou
       className="object-cover"
     />
     <span className="sr-only">{label}</span>
+    {nextActionHint && <span id={`deck-hint-${deck}`} className="sr-only">{nextActionHint}</span>}
     {showCount && <strong className="absolute bottom-2 left-1/2 -translate-x-1/2 text-sm text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">{count}</strong>}
   </div>;
 }

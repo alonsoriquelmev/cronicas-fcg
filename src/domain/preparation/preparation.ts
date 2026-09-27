@@ -338,3 +338,14 @@ export function formatCardType(type: CardType) {
         ? "Verse"
         : type;
 }
+
+export function arrangeSpecialEssences(orderedDefinitionIds: string[], catalog: Record<string, CatalogEntry>, startingPlayer: boolean) {
+  const specials = orderedDefinitionIds.filter((id) => isSpecialEssence(catalog[id]));
+  const basics = orderedDefinitionIds.filter((id) => !isSpecialEssence(catalog[id]));
+  const specialPositions = allowedSpecialEssencePositions(startingPlayer);
+  let specialIndex = 0;
+  let basicIndex = 0;
+  return orderedDefinitionIds.map((_, index) => specialPositions.has(index + 1)
+    ? specials[specialIndex++] ?? basics[basicIndex++]
+    : basics[basicIndex++] ?? specials[specialIndex++]);
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { api } from "@/../convex/_generated/api";
 import { cardCatalog, cardDefinitionsById } from "@/data/cards/catalog";
 import type { CardDefinition } from "@/domain/cards/card.types";
@@ -13,11 +13,13 @@ import {
   copyTextToClipboard,
 } from "@/components/room/room.invite";
 import {
+  arrangeSpecialEssences,
   alliedCardCount,
   defaultEssenceDeck,
   essenceDefinitions,
   formatCardType,
   isSpecialEssence,
+  allowedSpecialEssencePositions,
   mainDeckDefinitions,
   MAX_SPECIAL_ESSENCES,
   MAX_SPECIAL_ESSENCE_COPIES_IN_ALLIANCES,
@@ -329,7 +331,7 @@ export function PreparationScreen({
     const next = [...specials];
     for (let index = 0; next.length < 10 && basics.length > 0; index += 1)
       next.push(basics[index % basics.length]);
-    setEssenceOrder(next.slice(0, 10));
+    setEssenceOrder(arrangeSpecialEssences(next.slice(0, 10), cardDefinitionsById, preparation?.startingPlayerId === view.playerId));
   };
   const addSpecialEssence = (id: string) => {
     const selected = essenceOrder.filter((cardId) =>
@@ -358,11 +360,13 @@ export function PreparationScreen({
   };
   const confirmOrder = async () => {
     setError("");
+    const ordered = arrangeSpecialEssences(essenceOrder, cardDefinitionsById, preparation?.startingPlayerId === view.playerId);
+    setEssenceOrder(ordered);
     try {
       await confirmEssenceOrder({
         code: view.code,
         playerSessionToken: sessionToken,
-        orderedDefinitionIds: essenceOrder,
+        orderedDefinitionIds: ordered,
       });
     } catch (reason) {
       setError(
@@ -566,6 +570,7 @@ export function PreparationScreen({
         )}
         {preparation.stage === "DECK_SELECTION" && (
           <DeckSelection
+            key={faction}
             format={activeFormat}
             faction={faction}
             onFactionChange={changeFaction}
@@ -797,7 +802,6 @@ function DeckSelection({
   const [selectedFactions, setSelectedFactions] = useState<string[] | null>(
     null,
   );
-  useEffect(() => setSelectedFactions(null), [faction]);
   const allCards = [...available, ...specialEssences];
   const availableFactionIds = Array.from(
     new Set(
@@ -1468,13 +1472,20 @@ function EssenceOrdering({
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const starts = starter === playerId;
-  const validation = validateEssenceOrder(order, catalogById, starts);
+  const visibleOrder = arrangeSpecialEssences(order, catalogById, starts);
+  const validation = validateEssenceOrder(visibleOrder, catalogById, starts);
+  const permittedSpecialSlots = allowedSpecialEssencePositions(starts);
   const allowed = starts ? "2, 4, 6, 8" : "1, 3, 5, 7";
   const move = (targetIndex: number) => {
     if (dragIndex === null || dragIndex === targetIndex || confirmed) return;
-    const next = [...order];
-    const [item] = next.splice(dragIndex, 1);
-    next.splice(targetIndex, 0, item);
+    const draggedSpecial = isSpecialEssence(catalogById[visibleOrder[dragIndex]]);
+    const targetSpecial = isSpecialEssence(catalogById[visibleOrder[targetIndex]]);
+    if (draggedSpecial !== targetSpecial) {
+      setDragIndex(null);
+      return;
+    }
+    const next = [...visibleOrder];
+    [next[dragIndex], next[targetIndex]] = [next[targetIndex], next[dragIndex]];
     onOrderChange(next);
     setDragIndex(null);
   };
@@ -1494,10 +1505,11 @@ function EssenceOrdering({
         </p>
       )}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5 lg:grid-cols-10">
-        {order.map((id, index) => {
+        {visibleOrder.map((id, index) => {
           const card = preparationCard(id, index);
           const definition = card.definition;
           const special = definition ? isSpecialEssence(definition) : false;
+          const specialSlot = permittedSpecialSlots.has(index + 1);
           return (
             <div
               key={`${id}-${index}`}
@@ -1505,7 +1517,7 @@ function EssenceOrdering({
               onDragStart={() => setDragIndex(index)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => move(index)}
-              className={`flex min-w-0 flex-col items-center gap-1 border p-2 ${special ? "border-amber-200/40" : "border-white/10"}`}
+              className={`flex min-w-0 flex-col items-center gap-1 border p-2 ${specialSlot ? "border-amber-200/60 bg-amber-950/10" : "border-white/10"}`}
             >
               <span className="text-xs font-semibold text-amber-100">
                 {index + 1}

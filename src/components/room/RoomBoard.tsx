@@ -403,6 +403,15 @@ export function RoomBoard({
   };
 
   const counts = view.game.publicCounts ?? view.game.hiddenCounts;
+  const phaseProgress = view.game.phaseProgress?.turnNumber === view.game.turnNumber && view.game.phaseProgress.playerId === me
+    ? view.game.phaseProgress
+    : null;
+  const hasTappedResources = cards.some((card) => card.controllerId === me && card.tapped && (card.zone === "FIELD" || card.zone === "ESSENCE_ZONE"));
+  const nextAction = view.game.activePlayerId === me && view.game.phase === "ALBA" && !phaseProgress?.essenceDrawn && !hasTappedResources && publicCount(counts, me, "ESSENCE_DECK") > 0
+    ? { deck: "ESSENCE_DECK" as const, hint: "Siguiente acción: roba una Esencia" }
+    : view.game.activePlayerId === me && view.game.phase === "AMANECER" && !isOpeningTurn(view.game, me) && !phaseProgress?.mainCardDrawn && publicCount(counts, me, "MAIN_DECK") > 0
+      ? { deck: "MAIN_DECK" as const, hint: "Siguiente acción: roba del Mazo Principal" }
+      : null;
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <main
@@ -519,6 +528,7 @@ export function RoomBoard({
               onAction={run}
               onInspect={inspect}
               onContextMenu={openMenu}
+              nextAction={nextAction}
               sanctuaryBackground={sanctuaryBackground}
               allowMainDraw={view.game.phase !== "ALBA" && (!isOpeningTurn(view.game, me) || view.game.phase !== "AMANECER")}
             />
@@ -903,6 +913,7 @@ function ResourcePanel({
   onContextMenu,
   sanctuaryBackground,
   allowMainDraw = true,
+  nextAction,
 }: {
   testId: string;
   label: string;
@@ -922,6 +933,7 @@ function ResourcePanel({
   ) => void;
   sanctuaryBackground: boolean;
   allowMainDraw?: boolean;
+  nextAction?: { deck: "MAIN_DECK" | "ESSENCE_DECK"; hint: string } | null;
 }) {
   void cards;
   const mainCount = publicCount(hiddenCounts, playerId, "MAIN_DECK");
@@ -954,6 +966,7 @@ function ResourcePanel({
           enabled={!opponent}
           opponent={Boolean(opponent)}
           deck="MAIN_DECK"
+          nextActionHint={nextAction?.deck === "MAIN_DECK" ? nextAction.hint : undefined}
           onContextMenu={(event) =>
             onContextMenu(
               event,
@@ -969,6 +982,7 @@ function ResourcePanel({
           enabled={!opponent}
           opponent={Boolean(opponent)}
           deck="ESSENCE_DECK"
+          nextActionHint={nextAction?.deck === "ESSENCE_DECK" ? nextAction.hint : undefined}
           onContextMenu={(event) =>
             onContextMenu(
               event,
@@ -2327,6 +2341,7 @@ function DeckPile({
   opponent,
   deck,
   onContextMenu,
+  nextActionHint,
 }: {
   label: string;
   count: number;
@@ -2334,6 +2349,7 @@ function DeckPile({
   opponent: boolean;
   deck: "MAIN_DECK" | "ESSENCE_DECK";
   onContextMenu: (event: React.MouseEvent) => void;
+  nextActionHint?: string;
 }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-1">
@@ -2343,6 +2359,7 @@ function DeckPile({
         count={count}
         deck={deck}
         enabled={enabled}
+        nextActionHint={nextActionHint}
         showCount={false}
         onClick={(event) => {
           event.stopPropagation();

@@ -246,6 +246,8 @@ describe("RoomBoard terminal confirmations", () => {
     expect(screen.getAllByTestId("card-back-MAIN_DECK")).toHaveLength(2);
     expect(screen.getAllByTestId("card-back-ESSENCE_DECK")).toHaveLength(2);
     expect(screen.getAllByTestId("card-back-MAIN_DECK")[0].style.aspectRatio).toBe(CARD_ASPECT_RATIO);
+    expect(screen.getAllByTestId("card-back-ESSENCE_DECK")[1].getAttribute("data-next-action")).toBe("true");
+    expect(screen.getAllByTestId("card-back-MAIN_DECK")[1].getAttribute("data-next-action")).toBe("false");
     expect(screen.getByLabelText("Main Deck, 2 cartas")).toBeTruthy();
     expect(screen.getByLabelText("Essence Deck, 2 cartas")).toBeTruthy();
   });

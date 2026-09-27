@@ -5,6 +5,8 @@ import {
   ESSENCE_DECK_SIZE,
   MAIN_DECK_SIZE,
   MAX_COPIES_PER_CARD,
+  allowedSpecialEssencePositions,
+  arrangeSpecialEssences,
   defaultEssenceDeck,
   essenceDefinitions,
   isSpecialEssence,
@@ -51,6 +53,17 @@ const validLoadout = () => ({
 });
 
 describe("MISSION_003 deck preparation rules", () => {
+  it.each([true, false])("places special Essences only in the allowed slots (starting player: %s)", (starts) => {
+    const input = completeEssenceDeck(mockCardCatalog, "TEST");
+    const arranged = arrangeSpecialEssences(input, catalog, starts);
+    const specialPositions = arranged.flatMap((id, index) =>
+      isSpecialEssence(catalog[id]) ? [index + 1] : [],
+    );
+    expect(specialPositions).toEqual([...allowedSpecialEssencePositions(starts)]);
+    expect(validateEssenceOrder(arranged, catalog, starts)).toEqual({ ok: true });
+    expect([...arranged].sort()).toEqual([...input].sort());
+  });
+
   it.each([34, 36])("rejects a main deck with %i cards", (size) => {
     const loadout = validLoadout();
     loadout.mainDeck = Array.from(
